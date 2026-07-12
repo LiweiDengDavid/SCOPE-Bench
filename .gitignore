@@ -1,0 +1,65 @@
+# Local datasets and generated features. Keep only repository-facing docs.
+/raw/**
+!/raw/README.md
+/datasets/**
+!/datasets/README.md
+
+# Full LLM outputs are distributed separately.
+/scoring/results/**
+!/scoring/results/README.md
+
+# Training, HPO, recommendation, and evaluation artifacts.
+/outputs/
+/artifacts/
+/checkpoints/
+/logs/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+
+# Downloaded model caches.
+/.cache/
+/scripts/models--sentence-transformers--*/
+
+# Credentials and machine-local settings.
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+*.pem
+*.key
+.remote-exp.yaml
+.remote-exp.yml
+
+# Python environments and caches.
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+
+# Editors, operating systems, and cloud-sync placeholders.
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*.baiduyun.uploading.cfg
+
+# Temporary files.
+*.tmp
+*.temp
+*.log
+

@@ -1,0 +1,124 @@
+# TimeMM -- Time-aware Multi-scale MultiModal recommendation (SIGIR'26)
+#
+# Faithful baseline of the paper's TimeMM model (official repo model class TIMEMM,
+# src/models/timemm.py, a fork of the FITMM repo) + the three time-feature builders
+# (time_edge_weight_builder_multiscale / time_user_gate / time_state_builder).
+#
+# TimeMM conditions a three-branch multimodal bipartite GCN (id / visual / textual)
+# on interaction time. Everything time-derived is FROZEN at init from the TRAIN
+# interaction timestamps (faithful; no per-query reference time):
+#   * K = len(tau_age_list) recency-kernel EDGE-WEIGHT sets
+#     w_k = clip(exp(-log1p(age_sec)/tau_k), clip_min, clip_max) with per-user
+#     max-train-time anchors -> weighted-GCN convolutions (w_ij/sqrt(deg_w_i*deg_w_j));
+#   * a TimeScaleGate (softmax over scales, temperature 0.7) mixes the K per-scale
+#     node embeddings using user_state[U,7]/item_state[I,7] temporal features;
+#   * a TimeAwareUserModalWeight gate mixes the 3 modality user reps from
+#     user_time_feat[U,4].
+# The item view is cat(id,v,t)[items] with a residual mm_adj propagation, where
+# mm_adj is the OFFICIAL all-ones item-item kNN Laplacian (uniform values
+# 1/(knn_k + 1e-7) on the cosine-topk support, NOT sim-weighted). The user view
+# is the time-gated routed concat of the 3 modality user reps PLUS the raw
+# preference concat cat(id_pref, v_pref, t_pref) added as a residual (official
+# propagate_user_item_graphs with no user graph). Scoring is a dot product.
+#
+# MAIN OBJECTIVE: BINARY CROSS-ENTROPY with logits ONLY. This is faithful to the
+# SHIPPED RELEASE, where the auxiliary terms are computed-then-discarded (the
+# calculate_loss return line adds only the BCE term). The aux losses ARE
+# implemented and exposed behind the YAML weight gates below, which DEFAULT TO
+# ZERO, so the out-of-the-box loss is exactly the shipped BCE-only behavior:
+#   * aux_weight  -> the official aux_loss = COMPLEMENT loss ONLY;
+#   * order_smooth_weight -> multi-scale order-smoothness hinge (official
+#     computes this then discards it, excluding it even from the commented-out
+#     total -- hence its own gate, deliberately NOT in the HPO space);
+#   * reg_weight1 -> gate-entropy regularisation;
+#   * reg_weight2 -> L2 on fused preferences + id embeddings.
+#
+# torch_geometric is stripped: the K weighted-normalised bipartite adjacencies are
+# precomputed once as sparse tensors (weighted degrees + torch.sparse.mm). The
+# framework Dataset drops the timestamp column, so TimeMM re-reads inter.csv
+# (userID,itemID,timestamp,split_label==0) from the dataset dir; when inter.csv is
+# absent it falls back to per-interaction timestamps on the dataloader
+# (dataloader.timestamps, aligned to inter_matrix(form='coo') order). mm_adj is
+# built once and cached to the dataset directory. No Baby config ships upstream
+# (only games); defaults follow the FITMM-family conventions.
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+# --- dimensions ---
+embedding_size: 64          # per-modality latent width (dim_latent); item view = 3*64
+feat_embed_dim: 64          # hidden width of the modality feature projection (dv/dt -> 4*d -> d)
+num_layers: 2               # weighted-GCN propagation depth per branch (layer-sum + input)
+n_mm_layers: 1              # item-item mm_adj residual propagation depth
+knn_k: 10                   # per-modality cosine-kNN neighbours for mm_adj
+mm_image_weight: 0.1        # image/text blend weight for mm_adj
+# NOTE: official's aggr_mode knob is intentionally NOT ported (no inert key):
+# its only non-"add" branch discards the recency edge weights entirely, and the
+# shipped TIMEMM.yaml search space is the singleton ['add'], so the non-add path
+# is never exercised. The port hardwires the "add" weighted-sym normalisation.
+
+# --- multi-scale recency kernels ---
+# tau_age_list is the K time-scale bandwidth list. It is a LIVE, configurable knob
+# (read via config["tau_age_list"]) but is intentionally NOT in the HPO
+# hyper_parameters bijection below: its value is inherently a list, which the
+# config-contract validator rejects as a "list-style default" for a searched key.
+# Sweep it by editing this default (or via a dataset override), not through HPO.
+tau_age_list: [4.0, 6.0, 10.0]
+use_age: true               # false -> disable recency weighting (all-1 edge weights)
+transform: "exp"            # recency kernel: exp -> exp(-log1p(age)/tau); inv -> 1/(1+age/tau)
+edge_weight_clip_min: 1.0e-3  # lower clip on recency weights
+edge_weight_clip_max: 1.0     # upper clip on recency weights (age 0 -> weight 1)
+recent_window_sec: 86400    # window (sec) for the user "recent-fraction" time feature
+scale_gate_hidden: 64       # hidden width of the TimeScaleGate stems + shared head
+scale_gate_temperature: 0.7 # softmax temperature of the per-node time-scale gate
+user_modal_gate_hidden: 32  # hidden width of the TimeAwareUserModalWeight MLP
+
+# --- auxiliary losses (OFF by default = shipped BCE-only release) ---
+aux_weight: 0.0             # weight of the official aux_loss = COMPLEMENT loss ONLY
+# order_smooth_weight gates the multi-scale order-smoothness hinge. Official
+# computes this term then DISCARDS it (excluded even from the commented-out
+# total), so it gets its own gate rather than riding on aux_weight, and it is
+# deliberately EXCLUDED from hyper_parameters / parameter_space.
+order_smooth_weight: 0.0
+reg_weight1: 0.0            # weight of the gate-entropy regularisation
+reg_weight2: 0.0            # weight of the L2 (fused preferences + id embeddings)
+order_smooth_margin: 0.1    # hinge margin in the multi-scale order-smoothness loss
+use_corr: true             # complement loss: true -> correlation, false -> covariance
+use_var_floor: false        # complement loss: penalise per-scale margin variance below var_floor
+var_floor: 1.0e-3           # target minimum std of centered per-scale margins
+var_weight: 0.1             # relative weight of the variance-floor term
+
+learning_rate: 0.0001
+weight_decay: 0.0
+
+hyper_parameters: [
+  "learning_rate",
+  "num_layers",
+  "knn_k",
+  "aux_weight",
+  "reg_weight1",
+  "reg_weight2",
+]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-2
+  num_layers:
+    type: "choice"
+    values: [1, 2, 3]
+  knn_k:
+    type: "choice"
+    values: [5, 10, 20]
+  aux_weight:
+    type: "loguniform"
+    low: 1.0e-3
+    high: 1.0e-1
+  reg_weight1:
+    type: "loguniform"
+    low: 1.0e-4
+    high: 1.0e-1
+  reg_weight2:
+    type: "loguniform"
+    low: 1.0e-3
+    high: 1.0e+0

@@ -1,0 +1,24 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64  # community "64 for all models" convention
+num_layers: 3  # MMGCN's GCN stack uses 3 layers in this implementation
+latent_dim: 256
+
+learning_rate: 0.003
+weight_decay: 0.0  # optimizer L2 off; in-model L2 applied once via reg_weight
+reg_weight: 0.00001  # in-model embedding-L2 coefficient
+
+# num_layers is intentionally excluded because this implementation exposes a
+# three-layer MMGCN stack.
+hyper_parameters: ["learning_rate", "reg_weight"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  reg_weight:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3

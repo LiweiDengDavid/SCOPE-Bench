@@ -1,0 +1,38 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+# --- architecture ---
+embedding_size: 64      # embedding_dim; whitening keeps the top-D SVD directions
+num_layers: 3           # L: FSC forward hops AND the BSC Smoother depth
+gamma: 0.1              # staircase exponent: beta3[d] = 0.1 + 0.9*(d/D)^gamma
+num_neighbors: '5-1'    # per-modality kNN degree + init blend (text 5, visual 1);
+                        # graph-affecting -> NOT searchable
+
+# --- optimization ---
+# STAIR supplies its own optimizer via the additive build_optimizer factory hook
+# (AdamWSEvo: item-group Adam deltas Neumann-smoothed over the item kNN mAdj =
+# BSC; user group plain AdamW). The name below is recorded for provenance; the
+# hook fires regardless, so no standard optimizer is built for STAIR.
+optimizer: 'adamwsevo'
+learning_rate: 0.001
+weight_decay: 0.3       # decoupled (AdamW) weight decay, applied inside AdamWSEvo
+learning_rate_scheduler: null   # official run uses no scheduler
+train_batch_size: 1024
+loss_type: 'bpr'        # single BPR term, 1 negative (built in-model)
+
+# NOTE: per-dataset best (from the official configs): Baby wd=0.3 gamma=0.1;
+# Sports wd=0.1 gamma=0.2; Electronics wd=0.1 gamma=0.4 batch=4096.
+
+hyper_parameters: ["learning_rate", "weight_decay", "gamma"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-4
+    high: 1.0e-2
+  weight_decay:
+    type: "choice"
+    values: [0.1, 0.2, 0.3]
+  gamma:
+    type: "choice"
+    values: [0.1, 0.2, 0.4]

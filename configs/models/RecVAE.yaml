@@ -1,0 +1,45 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: false
+
+hidden_dim: 512 # RecBole default encoder hidden dimension
+latent_dim: 128 # RecBole default latent space dimension
+dropout_rate: 0.5 # RecBole default dropout probability
+beta: 0.2 # KL divergence weight for beta-VAE
+gamma: 0.005 # Additional regularization term weight
+mixture_weights: [0.15, 0.75, 0.1] # [standard prior, posterior prior, uniform prior]
+encoder_epochs: 3 # Number of encoder training epochs
+decoder_epochs: 1 # Number of decoder training epochs
+
+learning_rate: '1e-3' # RecBole default learning rate
+weight_decay: 0.0 # VAE typically does not use weight decay
+
+hyper_parameters: ["latent_dim", "hidden_dim", "beta", "learning_rate", "dropout_rate", "weight_decay", "gamma"]
+parameter_space:
+  latent_dim:
+    type: "choice"
+    values: [128, 256, 512] # Latent space dimension choices
+  hidden_dim:
+    type: "choice"
+    values: [256, 512, 1024] # Encoder hidden layer dimension choices
+  beta:
+    type: "logscale"
+    low: 1e-2
+    high: 1.0 # KL weight range for beta-VAE
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  gamma:
+    type: "logscale"
+    low: 1e-5
+    high: 1e-3
+

@@ -1,0 +1,46 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+num_layers: 3 # Number of GCN layers for graph convolution
+knn_k: 10 # K-nearest neighbors for graph construction
+dropout_rate: 0.1 # Dropout rate for graph sampling
+temperature: 0.1 # Temperature parameter for contrastive learning
+asg: true # Adaptive structure generation
+auige: true # Adaptive user-item graph enhancement
+m_alpha: 0.5 # Multimodal fusion weight (text vs visual)
+pe: true # Use positional encoding
+use_id: false # ID-free is the paper's proposed method (arXiv:2507.05715); set true only for the ID-based ablation
+use_text: true # Use text features
+use_image: true # Use visual features
+lambda_align: '1e-3' # Default weight for multimodal alignment loss
+save_intermediate: false # Whether to save intermediate embeddings to disk during training
+learning_rate: '1e-3' # Default learning rate
+weight_decay: '1e-5' # Default weight decay
+
+hyper_parameters: ["lambda_align", "learning_rate", "weight_decay", "dropout_rate", "temperature", "m_alpha"]
+parameter_space:
+  lambda_align:
+    type: "choice"
+    values: [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e0]
+
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  temperature:
+    type: "choice"
+    values: [0.1, 0.2, 0.3, 0.4, 0.5]
+
+  m_alpha:
+    type: "choice"
+    values: [0.1, 0.2, 0.3, 0.4, 0.5]

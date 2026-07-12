@@ -1,0 +1,49 @@
+# Structured benchmark spec for the benchmark planner/executor.
+# Usage:
+#   python scripts/run_benchmark.py --spec configs/examples/benchmark.yaml --dry-run
+#   python scripts/run_benchmark.py --spec configs/examples/benchmark.yaml
+#   python scripts/run_benchmark.py --spec configs/examples/benchmark.yaml --no-resume
+#   python scripts/run_benchmark.py --spec configs/examples/benchmark.yaml --summarize
+# Note:
+#   - This format is model/dataset aware and is the preferred reproducibility path.
+#   - --summarize executes or resumes incomplete planned runs before writing
+#     summary artifacts; it is not a read-only report command.
+#   - For hpo runs, summary reads the matching hyper_search CSV, selects the best
+#     completed trial by target_score, and reports that trial's test_metrics.
+#   - If an HPO run enables optimization.final_train, the final-train result and
+#     output.export files are downstream artifacts; summary still reads the HPO
+#     trial-history CSV.
+
+experiments:
+  - name: "centralized-seed-sweep"
+    models: ["BPR", "LightGCN"]
+    datasets: ["Beauty", "Baby"]
+    seeds: [2024, 2025]
+    mode: "train"
+    type: "benchmark"
+    comment: "seed_sweep"
+    overrides:
+      training:
+        max_epochs: 1
+
+  - name: "vbpr-hpo-smoke"
+    model: "VBPR"
+    dataset: "Beauty"
+    seeds: [2024]
+    mode: "hpo"
+    type: "benchmark"
+    comment: "bayesian_smoke"
+    overrides:
+      training:
+        max_epochs: 20
+    hpo:
+      strategy: "bayesian"
+      budget: 5
+      resume: false
+      verbose: true
+
+reporting:
+  metrics: ["Recall@10", "NDCG@10"]
+  significance_baseline: "BPR"
+  significance_test: "wilcoxon"
+  significance_pair_field: "seed"

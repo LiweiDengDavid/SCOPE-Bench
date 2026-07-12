@@ -1,0 +1,41 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: false
+
+embedding_size: 64 # Embedding dimension
+mf_train: true # Enable GMF path
+mlp_train: true # Enable MLP path
+dropout_rate: 0.1 # Dropout rate
+
+num_layers: 2 # Number of MLP layers
+mlp_hidden_size: 128 # First MLP layer dimension (each layer automatically halves)
+
+optimizer: "adam"
+learning_rate: '1e-3'
+weight_decay: 0.0  # optimizer L2 — kept off; embedding L2 is applied in-model
+embedding_weight_decay: 0.0  # in-model EmbLoss coefficient
+
+hyper_parameters: ["embedding_size", "num_layers", "mlp_hidden_size", "dropout_rate", "learning_rate", "embedding_weight_decay"]
+
+parameter_space:
+  embedding_size:
+    type: "choice"
+    values: [32, 64, 128, 256, 512]
+  num_layers:
+    type: "choice"
+    values: [1, 2, 3]
+  mlp_hidden_size:
+    type: "choice"
+    values: [64, 128, 256, 512]
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  embedding_weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3

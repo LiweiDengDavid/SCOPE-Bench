@@ -1,0 +1,33 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: true
+
+hidden_size: 64
+num_layers: 3
+max_seq_len: 50
+dropout_rate: 0.2
+
+learning_rate: 0.001  # GRU4Rec / RecBole default for Adam; 0.1 stalls training
+weight_decay: 0.0001  # optimizer L2 coefficient
+loss_type: ce  # Options: ce, bpr, top1
+
+hyper_parameters: ["learning_rate", "weight_decay", "num_layers", "dropout_rate", "hidden_size"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-2
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4, 5]
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  hidden_size:
+    type: "choice"
+    values: [32, 64, 128, 256]

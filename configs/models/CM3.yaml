@@ -1,0 +1,40 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+
+# CM3 graph knobs
+knn_k: 10
+mm_image_weight: 0.1
+n_mm_layers: 1
+num_ui_layers: 3
+
+# Calibrated-uniformity knobs
+gamma: 0.5       # uniformity loss weight
+min_sim: 0.0     # lower clamp on multimodal similarity (calibration)
+max_sim: 1.0     # upper clamp on multimodal similarity (calibration)
+
+# Spherical Bezier fusion
+alpha: 0.5       # Beta(alpha, alpha) mixing distribution for spherical fusion
+
+learning_rate: 0.001
+weight_decay: 0.0
+
+hyper_parameters: ["num_ui_layers", "gamma", "max_sim", "alpha", "weight_decay"]
+parameter_space:
+  num_ui_layers:
+    type: "choice"
+    values: [3, 4]
+  gamma:
+    type: "choice"
+    values: [0.5, 0.9]
+  max_sim:
+    type: "choice"
+    values: [0.8, 1.0]
+  alpha:
+    type: "choice"
+    values: [0.1, 0.5, 0.9]
+  weight_decay:
+    type: "choice"
+    values: [0.0, 1.0e-6]

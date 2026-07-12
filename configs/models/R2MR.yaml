@@ -1,0 +1,109 @@
+# R2MR -- Review and Rewrite Multimodal Recommendation (KDD'2025)
+#
+# Faithful baseline of the KDD'2025 R2MR model (official model class ``RMR``,
+# models/rmr.py + the rewrite orchestration in common/trainer.py + the PCA+tanh
+# feature preprocessing in common/abstract_recommender.py).
+#
+# R2MR audits the pre-extracted modality features as noisy "reviews": a Reviewer
+# scores each item/modality consensus quality in (0,1) from user-id vs modality
+# similarity masked by interactions; a soft in-forward rewrite blends distrusted
+# features toward tanh(iu_graph @ user_id); two rounds of symmetric-normalized
+# UI/IU propagation produce cat(t,v) reps scored by dot product under a BPR loss
+# (the official LIVE path -- the repo's crashing DualGNN-copy calculate_loss is
+# NOT ported). A VQGAN Rewriter fires every ``rewrite_period`` epochs (<=
+# ``max_rewrites``): both-modality-high items train a bidirectional
+# Encoder+VQ-Codebook+Decoder+GAN, whose cross-generated features are re-scored
+# by the Reviewer and injected only when they clear ``thresholds``.
+#
+# Deviations (documented in r2mr.py): the dense [n_items,n_users] mask + fp16
+# score matmul is replaced by a chunked SPARSE consensus; the VQGAN rewriter is
+# folded into pre_epoch_processing via an internal epoch counter on the official
+# POST-epoch schedule (official trainer rewrites after 0-based epochs 6,12,18...,
+# so the model first trains on rewritten features at epochs 7,13,19...; the VQGAN
+# keeps its own optimizers and stays out of the main optimizer); rewritten
+# features live in frozen BUFFERS while the original feature Parameters stay
+# registered (stable trainable set -> the main optimizer is never rebuilt and
+# Adam moments persist, matching the official once-built optimizer that never
+# steps the post-rewrite Parameters); and the official LambdaLR(1-epoch/70) --
+# which decays the LR linearly to 0 by epoch 70 and goes NEGATIVE beyond -- is
+# replaced by the framework's standard constant LR (no decay).
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+# --- dimensions ---
+# dim_latent is forced in-model to the TEXT feature dim (v_feat is PCA-reduced to
+# it and both modalities are tanh-squashed). embedding_size is unused by the live
+# path but kept for the framework's construction contract.
+embedding_size: 64
+
+# --- reviewer / rewrite schedule ---
+dropout_rate: 0.3          # dropout on user_id_embedding (the only stochastic op)
+# BPR embedding-L2 coefficient (0.5*||emb||^2 / batch). The official LIVE
+# bpr_loss HARDCODES this to 1e-4 (models/rmr.py:330 ``emb_loss = 1e-4 *
+# regularizer``; the official reg_weight config key is dead). Kept live +
+# HPO-searchable here (round convention); the default matches the hardcode.
+reg_weight: 1.0e-4
+# Review-score gate for both-high grouping + rewrite acceptance. Merges the
+# official SEPARATE text_threshold / image_threshold knobs
+# (common/trainer.py:105-106) into one knob; both are 0.5 officially, so the
+# merged default is equivalent.
+thresholds: 0.5
+rewrite_period: 6          # fire the VQGAN rewriter every N epochs
+max_rewrites: 10           # cap on the number of rewrite cycles
+
+# --- VQGAN two-stage rewriter (faithful to the official vq_config + the
+# hardcodes in the official trainer/model where the config keys are dead) ---
+vq_code_book_num_vector: 4096   # codebook size
+vq_code_dim: 32                 # code vector dim
+vq_beta: 0.1                    # commitment weight in the VQ code loss
+vq_gan_weight: 0.1              # weight on the (real+fake) BCE GAN loss
+vq_enc_out_dim: 1024            # encoder output width (pre-quantization)
+vq_prompt_dim: 256              # direction-prompt embedding dim (text<->image)
+vq_enc_channels: [1024, 2048]   # encoder hidden channel list
+vq_dec_channels: [1024, 2048]   # decoder hidden channel list
+vq_dis_channels: [512, 128]     # discriminator hidden channel list
+vq_lr: 5.0e-4                   # VQGAN AdamW learning rate
+vq_dis_lr: 5.0e-5               # discriminator Adam learning rate
+vq_beta1: 0.5                   # Adam(W) beta1 for both VQGAN optimizers
+vq_beta2: 0.9                   # Adam(W) beta2 for both VQGAN optimizers
+ts_epochs_first: 200            # two-stage epochs on the first rewrite cycle
+ts_epochs_rest: 20              # two-stage epochs on subsequent rewrite cycles
+# VQGAN train/infer DataLoader batch size. The official trainer HARDCODES
+# batch_size=128 for both the train and the infer loaders
+# (common/trainer.py:254-259); the official vq_config's TS_batch_size key is
+# DEAD. Kept configurable; the default matches the official hardcode.
+ts_batch_size: 128
+
+learning_rate: 0.1
+# The official _build_optimizer maps learner 'adam' to
+# optim.AdamW(model.parameters(), lr=learning_rate) (common/trainer.py:153-154),
+# i.e. AdamW with its IMPLICIT default weight_decay=0.01 -- pinned here.
+optimizer: "adamw"
+weight_decay: 0.01
+
+hyper_parameters: [
+  "learning_rate",
+  "dropout_rate",
+  "reg_weight",
+  "thresholds",
+  "rewrite_period",
+]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-4
+    high: 1.0e-1
+  dropout_rate:
+    type: "choice"
+    values: [0.0, 0.1, 0.3, 0.5]
+  reg_weight:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-3
+  thresholds:
+    type: "choice"
+    values: [0.4, 0.5, 0.6]
+  rewrite_period:
+    type: "choice"
+    values: [3, 6, 10]

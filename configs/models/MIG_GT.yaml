@@ -1,0 +1,28 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+k_visual: 2
+k_text: 1
+k_id: 2
+global_sample_size: 64
+eval_sample_seed: 2020   # fixed seed for the deterministic global sample at inference
+n_heads: 1
+tur_weight: 1.0
+cl_weight: 0.0
+cl_temperature: 0.2   # InfoNCE temperature for the ablation-only CL term
+reg_weight: 1.0e-4
+
+learning_rate: 1.0e-3
+weight_decay: 0.0
+
+hyper_parameters: ["learning_rate", "reg_weight", "k_visual", "k_text", "k_id", "global_sample_size", "tur_weight"]
+parameter_space:
+  learning_rate: {type: loguniform, low: 1.0e-5, high: 1.0e-2}
+  reg_weight: {type: loguniform, low: 1.0e-6, high: 1.0e-2}
+  k_visual: {type: choice, values: [1, 2, 3]}
+  k_text: {type: choice, values: [1, 2, 3]}
+  k_id: {type: choice, values: [1, 2, 3, 4]}
+  global_sample_size: {type: choice, values: [32, 64, 128]}
+  tur_weight: {type: loguniform, low: 1.0e-2, high: 1.0e1}

@@ -1,0 +1,19 @@
+# NexusRec core dependencies
+# Install PyTorch manually first: https://pytorch.org/get-started/locally/
+# Then: pip install -r requirements.txt
+#
+# For optional extras:
+#   pip install -e ".[torch]"          -- PyTorch + graph libs
+#   pip install -e ".[multimodal]"     -- vision/language encoders
+#   pip install -e ".[hpo]"            -- hyperparameter optimization
+#   pip install -e ".[viz]"            -- visualization tools
+#   pip install -e ".[all]"            -- everything
+
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+scikit-learn>=1.3.0
+PyYAML>=6.0
+tqdm>=4.65.0
+coloredlogs>=15.0.0
+psutil>=5.9.0

@@ -1,0 +1,280 @@
+######################################################
+#                   NexusRec Config                   #
+######################################################
+#
+# HIERARCHICAL CONFIGURATION DESIGN:
+# 1. All control fields organized under logical groups (training, evaluation, output, experiment)
+# 2. Method-specific configs (configs/models/*.yaml) override via flat keys (deep_merge)
+# 3. Nested groups are flattened to top-level at runtime by core/config.py
+# 4. Model YAML flat overrides take precedence over flattened defaults
+#
+
+# =====================================
+# BASIC CONFIGURATION
+# =====================================
+
+# Model Configuration (overridden by model-specific configs)
+model: "VBPR"
+is_federated: False
+is_multimodal_model: True
+is_sequential: False
+
+# Dataset Configuration
+data_path: "./datasets/"
+dataset: "Beauty"
+interaction_file: "inter.csv"
+inter_splitting_label: "split_label"
+filter_out_cold_start_users: true
+
+# Field Mapping
+NEG_PREFIX: "neg__"
+USER_ID_FIELD: "userID"
+ITEM_ID_FIELD: "itemID"
+TIME_FIELD: "timestamp"
+field_separator: ","
+
+# Hardware
+seed: 2024
+# Force deterministic Torch algorithms for exact GPU reproducibility. Off by
+# default (some ops have no deterministic CUDA kernel and would raise). Enable
+# when you need bit-identical GPU runs; expect a throughput cost.
+deterministic_algorithms: false
+state: "info"
+
+# Model Architecture Defaults (overridden by model-specific configs)
+embedding_size: 64
+dropout_rate: 0.1
+fusion_method: "concat"
+hidden_size: 128
+num_layers: 2
+end2end: false
+
+# =====================================
+# TRAINING
+# =====================================
+
+training:
+  early_stopping: true
+  eval_step: 1
+  eval_enabled: true
+  skip_eval_during_training: false
+  max_epochs: 500
+  tolerance: 1e-5
+  optimizer: "adam"
+  learning_rate: 0.001
+  weight_decay: 1e-5
+  stopping_step: 10
+  clip_grad_norm: 5.0
+  learning_rate_scheduler: null
+  train_batch_size: 2048
+  loss_type: "bpr"
+  nan_abort_threshold: 3          # consecutive NaN/Inf losses before aborting
+  batch_log_interval: 100         # log training loss every N batches (0=disable)
+  # Optimizer-specific defaults. Only runtime-consumed optimizer/model keys live here:
+  #   momentum -> SGD (core/training/factory.py)
+  #   alpha    -> model-side contrastive/regularization weight read via config['alpha']
+  #               by MGCN, SLMRec, FedRAP, MMFedRAP. (NOT forwarded to torch RMSprop;
+  #               the factory's rmsprop branch ignores it and default configs do not select
+  #               optimizer: rmsprop.)
+  momentum: 0.9           # SGD
+  alpha: 0.99             # model contrastive/reg weight (MGCN/SLMRec/FedRAP/MMFedRAP)
+  detect_anomaly: false
+
+# =====================================
+# EVALUATION
+# =====================================
+
+evaluation:
+  metrics: ["Recall", "NDCG", "Precision"]
+  topk: [10, 20, 50]
+  valid_metric: "NDCG@10"
+  valid_metric_bigger: true
+  filter_seen: true
+  test_history_mask: "train_valid"  # train_valid (default) or train_only for FedVLR paper-compatible test masking
+  eval_batch_size: 4096
+  eval_test_during_training: false
+  eval_final_test: true
+  eval_test_frequency: 1
+  item_bucket_metrics: false
+  item_bucket_tail_quantile: 0.2
+  item_bucket_head_quantile: 0.8
+
+# Optional cognitive-depth metrics. Dataset configs enable this when a CDS
+# label file and the required item-id mapping artifacts are available.
+lcds:
+  enabled: false
+  cds_jsonl: "scoring/results/Qwen3_7_Max_full_t0p3_seed42_scores.jsonl"
+  dataset_dir: ""
+  gain_divisor: 6.0
+
+# =====================================
+# OUTPUT AND EXPERIMENT
+# =====================================
+
+output:
+  save_model: true
+  # Training resume (continue an interrupted run). Distinct from HPO/benchmark
+  # --no-resume (which skips already-completed trials). When resume_training is
+  # true, training restores model+optimizer+scheduler+RNG+dataloader-order+
+  # best-tracking from the full-state checkpoint below (written every
+  # checkpoint_every_n_epochs epochs/rounds, gated SOLELY by resume_training) and
+  # continues from the next epoch/round. Kept distinct from best_model.pth so the
+  # evaluation artifact contract is unchanged. Resume is bit-identical to an
+  # uninterrupted run on CPU / num_workers=0 (DataLoader worker RNG is not
+  # captured). Federated checkpoints include all per-client state, so for runs
+  # with many clients prefer a larger checkpoint_every_n_epochs to limit I/O.
+  resume_training: false
+  resume_checkpoint_name: "resume_state.pth"
+  checkpoint_every_n_epochs: 1
+  print_model_info: true
+  log_path: "outputs/logs/{model}/{dataset}/"
+  checkpoint_path: "outputs/checkpoints/{model}/{dataset}/"
+  save_path: "outputs/results/{model}/{dataset}/{type}/"
+  hpo_path: "outputs/hyper_search/{model}/{dataset}/"
+  require_training: true
+  save_recommended_topk: false
+  save_recommendation_scores: false
+  save_recommendation_score_components: false
+  save_recommendation_artifact_by_epoch: false
+  export:
+    enabled: false
+    formats: ["json"]
+    include_scores: true
+    split: "test"
+    topk: null
+    path: ""
+  save_training_triplets: false
+  save_training_triplet_scores: false
+  training_triplet_log_max_rows: 200000
+
+experiment:
+  type: "experiment"
+  comment: "default"
+
+hpo_lineage: {}
+
+# =====================================
+# SAMPLING
+# =====================================
+
+sampling:
+  use_neg_sampling: true        # Enable negative sampling during training
+  num_negatives: 1               # negatives sampled per positive (honored by _sample_neg_ids). K>1 requires a multi-negative-aware model (e.g. IDFREE/MMFCF/MMPFedRec); single-negative models (vbpr/mgcn/lattice/...) require K=1. Override per-experiment via param_overrides.
+  neg_pool_cap: 1000              # max items in per-user negative pool (memory cap)
+
+# =====================================
+# FEATURES
+# =====================================
+
+features:
+  vision_feature_file: "image_features.npy"
+  text_feature_file: "text_features.npy"
+  visual_dim: 512
+  text_dim: 512
+
+# Optional multimodal ablation control
+multimodal_ablation:
+  visual: null # null, remove, noise
+  text: null # null, remove, noise
+  id: null # null, remove, noise
+  visual_noise_type: "gaussian" # gaussian, uniform
+  text_noise_type: "gaussian" # gaussian, uniform
+  id_noise_type: "gaussian" # gaussian, uniform
+  visual_noise_scale: 1.0
+  text_noise_scale: 1.0
+  id_noise_scale: 1.0
+
+# =====================================
+# RESOURCES
+# =====================================
+
+resources:
+  num_workers: 4
+  gpu_id: 0
+  pin_memory: true
+  compile_client_model: false  # torch.compile for federated client model (Linux + CUDA only)
+
+# =====================================
+# OPTIMIZATION
+# =====================================
+
+# Whether to run HPO. Normally toggled by the --smart_hpo CLI flag; declared here
+# so config["smart_hpo"] always has an explicit default (read by direct index).
+smart_hpo: false
+
+optimization:
+  strategy: "bayesian" # random, grid, bayesian, tpe
+  budget: 1000
+  parallel: false       # split HPO trials across local GPUs on one node
+  parallel_gpus: ""     # comma-separated GPU ids; empty means all visible CUDA GPUs
+  parallel_dry_run: false
+  parallel_storage_dir: ""   # shard runtime: shared JournalStorage dir
+  parallel_study_name: ""    # shard runtime: shared Optuna study name
+  parallel_shard_offset: 0   # shard runtime: lineage offset for unique shard ids/seeds
+  parallel_global_shard_count: 0 # shard runtime: optional global lineage count
+  parallel_shard_index: 0    # shard runtime: sampler seed offset
+  parallel_shard_count: 1    # shard runtime: total shard count
+  parallel_target_budget: 0  # shard runtime: global completed-trial target
+  sampler_seed: null         # shard runtime: sampler seed while training seed stays fixed
+  duplicate_guard: auto      # auto enables exact duplicate pruning for parallel Optuna shards
+  objective: "maximize"
+  # Trial-attempt budget when duplicate trials are pruned before training: the
+  # search stops after max(remaining*max_attempts_multiplier, remaining+max_attempts_floor)
+  # Optuna attempts so a saturated search space cannot loop forever.
+  max_attempts_multiplier: 5
+  max_attempts_floor: 20
+  # Runtime overrides applied during HPO trials
+  save_model: false
+  print_model_info: false
+  eval_final_test: true
+  final_train:
+    enabled: false
+    overrides:
+      type: "final_train"
+      comment: "best_config"
+      save_model: true
+      resume_training: false
+      eval_final_test: true
+      eval_test_during_training: false
+
+# TPE Optimization Settings
+# Note: the "bayesian" strategy is implemented with Optuna's TPESampler (the
+# same backend as "tpe"), so it reads this block too. There is no separate
+# bayesian config block.
+tpe:
+  n_startup_jobs: 10
+  n_ei_candidates: 24
+  gamma: 0.15
+  gamma_cap: 25         # upper cap on n_good = min(ceil(gamma*n_trials), gamma_cap), matching Optuna's default cap
+  prior_weight: 1.0
+  random_state: 42
+  constant_liar: auto  # auto enables Optuna's parallel-TPE protection for shards
+
+# =====================================
+# PARADIGM-SPECIFIC CONFIGURATION
+# =====================================
+
+# Federated Learning
+federated:
+  clients_sample_ratio: 1.0
+  clients_sample_strategy: "random"
+  local_epochs: 5
+  aggregation_method: "fedavg"
+
+# Sequential Recommendation
+sequential:
+  max_seq_len: 50
+  min_seq_len: 3
+  split_method: "leave_one_out" # leave_one_out, ratio_split, temporal_ratio, hybrid
+  hybrid_threshold: 10  # for hybrid: sequences < threshold use leave_one_out
+  data_augmentation: false
+  augmentation_strategies: ["crop", "mask", "reorder"]
+  augmentation_mask_ratio: 0.2    # fraction of sequence items to mask
+  augmentation_max_mask: 3        # max items to mask per sequence
+  augmentation_min_seq_len: 3     # min sequence length for crop/reorder augmentation
+  # Opt-in: only loss_type='bpr' consumes sampled negatives (SASRec/GRU4Rec
+  # fail fast when neg_items is missing); the default ce/mlm/top1 paths never
+  # read them, so sampling by default only wastes time and pool memory.
+  neg_sampling: false
+  train_ratio: 0.8
+  valid_ratio: 0.1

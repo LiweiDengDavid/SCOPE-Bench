@@ -1,0 +1,39 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+memory_efficient: true
+embedding_size: 64
+num_layers: 3
+ssl_task: 'FAC'
+alpha: 0.01
+temperature: 0.2
+dropout_rate: 0.3
+fusion_method: 'concat'
+init: 'xavier'
+adj_type: 'pre'
+
+learning_rate: 0.005
+weight_decay: 0.0001
+
+hyper_parameters: ["learning_rate", "temperature", "alpha", "weight_decay", "num_layers"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  temperature:
+    type: "uniform"
+    low: 0.05
+    high: 1.0
+  alpha:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4, 5]

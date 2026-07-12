@@ -1,0 +1,282 @@
+# coding: utf-8
+# 
+"""
+DualGNN: Dual Graph Neural Network for Multimedia Recommendation, IEEE Transactions on Multimedia 2021.
+"""
+import os
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch_geometric.nn.conv import MessagePassing
+from torch_geometric.utils import remove_self_loops, degree
+
+from core.base import RecommenderBase
+
+
+class DualGNN(RecommenderBase):
+    def __init__(self, config, dataloader):
+        super().__init__(config, dataloader)
+        self.setup_multimodal_features(config)
+
+        self.k = config['knn_k']
+        self.aggr_mode = config['aggr_mode']
+        self.user_aggr_mode = 'softmax'
+        self.num_layer = config['num_layers']
+        # DualGNN's inner GCN stack has two convolution steps in this
+        # implementation, so expose that depth as a runtime contract.
+        if self.num_layer != 2:
+            raise ValueError(
+                "DualGNN's GCN depth is fixed at 2 layers in this implementation; "
+                f"config['num_layers']={self.num_layer} is not supported. Keep "
+                "num_layers=2 (it is excluded from DualGNN's HPO search space)."
+            )
+        self.dataloader = dataloader
+        # In-model embedding-L2 coefficient, decoupled from optimizer weight_decay.
+        self.reg_weight = float(config['reg_weight'])
+        self.batch_size = config['train_batch_size']
+        self.v_rep = None
+        self.t_rep = None
+        self.v_preference = None
+        self.t_preference = None
+        self.dim_latent = config['latent_dim']
+
+        dataset_path = os.path.abspath(config['data_path'] + config['dataset'])
+        user_graph_file = os.path.join(dataset_path, config['user_graph_dict_file'])
+        self.user_graph_dict = np.load(user_graph_file, allow_pickle=True).item()
+
+        # packing interaction in training into edge_index
+        train_interactions = dataloader.inter_matrix(form='coo').astype(np.float32)
+        edge_index = self.pack_edge_index(train_interactions)
+        self.edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous().to(self.device)
+        self.edge_index = torch.cat((self.edge_index, self.edge_index[[1, 0]]), dim=1)
+
+        self.weight_u = nn.Parameter(nn.init.xavier_normal_(
+            torch.tensor(np.random.randn(self.n_users, 2, 1), dtype=torch.float32, requires_grad=True)))
+        self.weight_u.data = F.softmax(self.weight_u.data, dim=1)
+
+        if self.v_feat is not None:
+            self.v_gcn = GCN(self.dataloader, self.batch_size, self.n_users, self.n_items, config['embedding_size'], self.aggr_mode,
+                         dim_latent=self.dim_latent,
+                         device=self.device, features=self.v_feat)
+        if self.t_feat is not None:
+            self.t_gcn = GCN(self.dataloader, self.batch_size, self.n_users, self.n_items, config['embedding_size'], self.aggr_mode,
+                         dim_latent=self.dim_latent,
+                         device=self.device, features=self.t_feat)
+
+        self.user_graph = User_Graph_sample(self.n_users, 'add', self.dim_latent)
+
+        # result_embed is a forward-pass cache (populated by forward(), read by full_sort_predict()).
+        # It is NOT a trainable parameter — wrapping in nn.Parameter would orphan gradients since
+        # forward() overwrites it each call.
+        self.result_embed = None
+        
+        # Initialize epoch_user_graph and user_weight_matrix
+        self.pre_epoch_processing()
+
+    def pre_epoch_processing(self):
+        self.epoch_user_graph, self.user_weight_matrix = self.topk_sample(self.k)
+        self.user_weight_matrix = self.user_weight_matrix.to(self.device)
+
+    def pack_edge_index(self, inter_mat):
+        rows = inter_mat.row
+        cols = inter_mat.col + self.n_users
+        # ndarray([598918, 2]) for ml-imdb
+        return np.column_stack((rows, cols))
+
+    def _compute_representation(self):
+        """Build the interaction-free user/item node representation.
+
+        Called by both ``forward()`` and ``full_sort_predict()`` so evaluation
+        recomputes under the trainer's eval mode. Only the loss scoring depends
+        on the interaction batch.
+        """
+        representation = None
+        if self.v_feat is not None:
+            self.v_rep, self.v_preference = self.v_gcn(self.edge_index, self.v_feat)
+            representation = self.v_rep
+        if self.t_feat is not None:
+            self.t_rep, self.t_preference = self.t_gcn(self.edge_index, self.t_feat)
+            if representation is None:
+                representation = self.t_rep
+            else:
+                representation += self.t_rep
+
+        # User-side fusion is a learned weighted sum (construction == 'weighted_sum').
+        if self.v_rep is not None:
+            self.v_rep = torch.unsqueeze(self.v_rep, 2)
+            user_rep = self.v_rep[:self.n_users]
+        if self.t_rep is not None:
+            self.t_rep = torch.unsqueeze(self.t_rep, 2)
+            user_rep = self.t_rep[:self.n_users]
+        if self.v_rep is not None and self.t_rep is not None:
+            user_rep = torch.matmul(torch.cat((self.v_rep[:self.n_users], self.t_rep[:self.n_users]), dim=2),
+                                    self.weight_u)
+        user_rep = torch.squeeze(user_rep)
+
+        item_rep = representation[self.n_users:]
+        ############################################ multi-modal information aggregation
+        h_u1 = self.user_graph(user_rep, self.epoch_user_graph, self.user_weight_matrix)
+        user_rep = user_rep + h_u1
+        self.result_embed = torch.cat((user_rep, item_rep), dim=0)
+        return self.result_embed
+
+    def forward(self, interaction):
+        user_nodes, pos_item_nodes = interaction[0], interaction[1]
+        neg_item_nodes = interaction[2] if len(interaction) > 2 else None
+
+        # Generate negative samples if needed
+        if neg_item_nodes is None:
+            # Generate random negative samples
+            neg_item_nodes = torch.randint(0, self.n_items, pos_item_nodes.shape, device=pos_item_nodes.device)
+        pos_item_nodes = pos_item_nodes + self.n_users
+        neg_item_nodes = neg_item_nodes + self.n_users
+
+        self._compute_representation()
+        user_tensor = self.result_embed[user_nodes]
+        pos_item_tensor = self.result_embed[pos_item_nodes]
+        neg_item_tensor = self.result_embed[neg_item_nodes]
+        pos_scores = torch.sum(user_tensor * pos_item_tensor, dim=1)
+        neg_scores = torch.sum(user_tensor * neg_item_tensor, dim=1)
+        return pos_scores, neg_scores
+
+    def calculate_loss(self, interaction):
+        user = interaction[0]
+        pos_scores, neg_scores = self.forward(interaction)
+        loss_value = -torch.mean(torch.log2(torch.sigmoid(pos_scores - neg_scores)))
+        reg_embedding_loss_v = (self.v_preference[user] ** 2).mean() if self.v_preference is not None else 0.0
+        reg_embedding_loss_t = (self.t_preference[user] ** 2).mean() if self.t_preference is not None else 0.0
+
+        reg_loss = self.reg_weight * (reg_embedding_loss_v + reg_embedding_loss_t)
+        # construction == 'weighted_sum'
+        reg_loss += self.reg_weight * (self.weight_u ** 2).mean()
+        return loss_value + reg_loss
+
+    def full_sort_predict(self, interaction):
+        user_indices = interaction[0]
+
+        # Recompute under the trainer's eval mode; this GCN path is deterministic.
+        self._compute_representation()
+        user_tensor = self.result_embed[:self.n_users]
+        item_tensor = self.result_embed[self.n_users:]
+        temp_user_tensor = user_tensor[user_indices, :]
+        score_matrix = torch.matmul(temp_user_tensor, item_tensor.t())
+        return score_matrix
+
+    def topk_sample(self, k):
+        user_graph_index = []
+        user_weight_matrix = torch.zeros(len(self.user_graph_dict), k)
+        tasike = []
+        for i in range(k):
+            tasike.append(0)
+        for i in range(len(self.user_graph_dict)):
+            if len(self.user_graph_dict[i][0]) < k:
+                if len(self.user_graph_dict[i][0]) == 0:
+                    user_graph_index.append(tasike)
+                    continue
+                user_graph_sample = self.user_graph_dict[i][0][:k]
+                user_graph_weight = self.user_graph_dict[i][1][:k]
+                while len(user_graph_sample) < k:
+                    rand_index = np.random.randint(0, len(user_graph_sample))
+                    user_graph_sample.append(user_graph_sample[rand_index])
+                    user_graph_weight.append(user_graph_weight[rand_index])
+                user_graph_index.append(user_graph_sample)
+
+                if self.user_aggr_mode == 'softmax':
+                    user_weight_matrix[i] = F.softmax(torch.tensor(user_graph_weight, dtype=torch.float32), dim=0)  # softmax
+                if self.user_aggr_mode == 'mean':
+                    user_weight_matrix[i] = torch.ones(k) / k  # mean
+                continue
+            user_graph_sample = self.user_graph_dict[i][0][:k]
+            user_graph_weight = self.user_graph_dict[i][1][:k]
+
+            if self.user_aggr_mode == 'softmax':
+                user_weight_matrix[i] = F.softmax(torch.tensor(user_graph_weight, dtype=torch.float32), dim=0)  # softmax
+            if self.user_aggr_mode == 'mean':
+                user_weight_matrix[i] = torch.ones(k) / k  # mean
+            user_graph_index.append(user_graph_sample)
+
+        return user_graph_index, user_weight_matrix
+
+class User_Graph_sample(torch.nn.Module):
+    def __init__(self, num_user, aggr_mode,dim_latent):
+        super(User_Graph_sample, self).__init__()
+        self.num_user = num_user
+        self.dim_latent = dim_latent
+        self.aggr_mode = aggr_mode
+
+    def forward(self, features,user_graph,user_matrix):
+        index = user_graph
+        u_features = features[index]
+        user_matrix = user_matrix.unsqueeze(1)
+        u_pre = torch.matmul(user_matrix,u_features)
+        u_pre = u_pre.squeeze()
+        return u_pre
+
+
+class GCN(torch.nn.Module):
+    def __init__(self,dataloader, batch_size, num_user, num_item, dim_id, aggr_mode,
+                 dim_latent=None,device = None,features=None):
+        super(GCN, self).__init__()
+        self.batch_size = batch_size
+        self.num_user = num_user
+        self.num_item = num_item
+        self.dataloader = dataloader
+        self.dim_id = dim_id
+        self.dim_feat = features.size(1)
+        self.dim_latent = dim_latent
+        self.aggr_mode = aggr_mode
+        self.device = device
+
+        if self.dim_latent:
+            self.preference = nn.Parameter(nn.init.xavier_normal_(torch.tensor(
+                np.random.randn(num_user, self.dim_latent), dtype=torch.float32, requires_grad=True),
+                gain=1).to(self.device))
+            self.MLP = nn.Linear(self.dim_feat, 4*self.dim_latent)
+            self.MLP_1 = nn.Linear(4*self.dim_latent, self.dim_latent)
+            self.conv_embed_1 = Base_gcn(self.dim_latent, self.dim_latent, aggr=self.aggr_mode)
+
+        else:
+            self.preference = nn.Parameter(nn.init.xavier_normal_(torch.tensor(
+                np.random.randn(num_user, self.dim_feat), dtype=torch.float32, requires_grad=True),
+                gain=1).to(self.device))
+            self.conv_embed_1 = Base_gcn(self.dim_latent, self.dim_latent, aggr=self.aggr_mode)
+
+    def forward(self, edge_index, features):
+        temp_features = self.MLP_1(F.leaky_relu(self.MLP(features))) if self.dim_latent else features
+        x = torch.cat((self.preference, temp_features), dim=0).to(self.device)
+        x = F.normalize(x).to(self.device)
+        h = self.conv_embed_1(x, edge_index)  # equation 1
+        h_1 = self.conv_embed_1(h, edge_index)
+
+        x_hat =h + x +h_1
+        return x_hat, self.preference
+
+
+class Base_gcn(MessagePassing):
+    def __init__(self, in_channels, out_channels, normalize=True, bias=True, aggr='add', **kwargs):
+        super(Base_gcn, self).__init__(aggr=aggr, **kwargs)
+        self.aggr = aggr
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+
+    def forward(self, x, edge_index, size=None):
+        if size is None:
+            edge_index, _ = remove_self_loops(edge_index)
+        x = x.unsqueeze(-1) if x.dim() == 1 else x
+        return self.propagate(edge_index, size=(x.size(0), x.size(0)), x=x)
+
+    def message(self, x_j, edge_index, size):
+        if self.aggr == 'add':
+            row, col = edge_index
+            deg = degree(row, size[0], dtype=x_j.dtype)
+            deg_inv_sqrt = deg.pow(-0.5)
+            norm = deg_inv_sqrt[row] * deg_inv_sqrt[col]
+            return norm.view(-1, 1) * x_j
+        return x_j
+
+    def update(self, aggr_out):
+        return aggr_out
+
+    def __repr(self):
+        return '{}({},{})'.format(self.__class__.__name__, self.in_channels, self.out_channels)

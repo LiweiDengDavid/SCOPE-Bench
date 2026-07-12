@@ -1,0 +1,37 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64  # BM3 paper and MMRec reference use 64-dimensional embeddings
+num_layers: 3
+ssl_weight: 0.1
+dropout_rate: 0.3
+
+learning_rate: 0.01
+weight_decay: 0.0001 # optimizer L2 only
+reg_weight: 0.1 # manual embedding-L2 coefficient (MMRec BM3 default), decoupled from weight_decay
+
+sampling:
+  use_neg_sampling: false
+
+hyper_parameters: ["learning_rate", "weight_decay", "dropout_rate", "num_layers", "ssl_weight"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4, 5]
+  ssl_weight:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1

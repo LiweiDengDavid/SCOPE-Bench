@@ -1,0 +1,36 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+num_ui_layers: 3
+num_layers: 3
+knn_k: 10
+alpha: 0.1
+temperature: 0.5
+
+learning_rate: 1.0
+weight_decay: 0.0  # optimizer L2 off; in-model L2 applied once via reg_weight
+reg_weight: 1.0  # in-model embedding-L2 coefficient
+learning_rate_scheduler: [0.96, 50]
+
+hyper_parameters: ["reg_weight", "learning_rate", "alpha", "num_layers", "knn_k"]
+parameter_space:
+  reg_weight:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  alpha:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4, 5]
+  knn_k:
+    type: "choice"
+    values: [5, 10, 15, 20, 30]

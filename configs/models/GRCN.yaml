@@ -1,0 +1,29 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+num_layers: 3
+dropout_rate: 0.1
+
+learning_rate: 1
+weight_decay: 0.0  # optimizer L2 off; in-model L2 applied once via reg_weight
+reg_weight: 0.0001  # in-model embedding-L2 coefficient
+
+hyper_parameters: ["learning_rate", "dropout_rate", "reg_weight", "num_layers"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  reg_weight:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4, 5]

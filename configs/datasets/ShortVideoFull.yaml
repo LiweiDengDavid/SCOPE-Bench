@@ -1,0 +1,78 @@
+interaction_file: "inter.csv"
+field_separator: ","
+USER_ID_FIELD: "userID"
+ITEM_ID_FIELD: "itemID"
+inter_splitting_label: "split_label"
+TIME_FIELD: "timestamp"
+features:
+  vision_feature_file: "image_features.npy"
+  text_feature_file: "text_features.npy"
+  visual_dim: 256
+  text_dim: 384
+
+# Add A-LCDS@K and E-LCDS@K to the same result dictionary/CSV as the ranking
+# metrics. K is taken directly from evaluation.topk.
+lcds:
+  enabled: true
+
+# HPO-tuned defaults for this dataset. These are applied only when the selected
+# model matches the key below, after the model YAML and shared dataset settings.
+model_overrides:
+  # complete=500/500, best_trial=363, best_valid_NDCG@10=0.014059
+  BPR:
+    learning_rate: 0.0017482740262741631
+    embedding_size: 512
+    weight_decay: 7.438346510825807e-06
+  # complete=500/500, best_trial=206, best_valid_NDCG@10=0.014743
+  LightGCN:
+    learning_rate: 0.00421690004190974
+    num_layers: 5
+    embedding_weight_decay: 3.018006405328605e-07
+    embedding_size: 256
+  # complete=500/500, best_trial=440, best_valid_NDCG@10=0.009247
+  FlowCF:
+    learning_rate: 0.0018293465025301995
+    n_steps: 15
+    s_steps: 3
+    time_embedding_size: 12
+    dropout_rate: 0.16497892357120675
+    weight_decay: 1.252917051295739e-08
+  # best_trial=405, best_valid_NDCG@10=0.015199
+  DiffMM:
+    learning_rate: 0.007803013129001037
+    loss_weights:
+      ssl_loss: 0.01
+      diffusion_loss: 0.01
+    weight_decay: 4.529072662210229e-08
+    contrastive_learning:
+      temperature: 0.3
+    num_layers: 4
+    dropout_rate: 0.46620780184645755
+  # complete=500/500, best_trial=266, best_valid_NDCG@10=0.010529
+  VBPR:
+    learning_rate: 0.003781135518445539
+    reg_weight: 2.0
+  # complete=500/500, best_trial=210, best_valid_NDCG@10=0.014089
+  BM3:
+    learning_rate: 0.001015716626403197
+    ssl_weight: 0.0001
+    dropout_rate: 0.018893896117776962
+    weight_decay: 6.016456952142947e-06
+    num_layers: 3
+  # complete=500/500, best_trial=488, best_valid_NDCG@10=0.011657
+  NCF: &ncf_tuned_defaults
+    learning_rate: 0.0003385206792049782
+    mlp_hidden_size: 64
+    dropout_rate: 0.43281623557905535
+    embedding_size: 512
+    num_layers: 3
+    embedding_weight_decay: 2.4277844146508308e-05
+  # Deprecated command-name compatibility.
+  NeuMF: *ncf_tuned_defaults
+  # complete=500/500, best_trial=400, best_valid_NDCG@10=0.011365
+  GRCN:
+    learning_rate: 0.00032824821862043394
+    reg_weight: 1.807964234378492e-05
+    num_layers: 2
+    dropout_rate: 0.02182236376146074
+    embedding_size: 256

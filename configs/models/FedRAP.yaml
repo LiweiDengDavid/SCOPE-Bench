@@ -1,0 +1,40 @@
+is_federated: true
+is_multimodal_model: false
+is_sequential: false
+learning_rate_scheduler: null
+
+embedding_size: 64
+alpha: 1e-1
+beta: 1e-2
+loss_warmup_rounds: 10 # rounds over which independency/reg loss weight warms up (tanh)
+decay_rate: 0.97
+
+optimizer: 'sgd'
+learning_rate: 1e-2
+weight_decay: 1e-6
+
+hyper_parameters: ["alpha", "beta", "learning_rate", "weight_decay", "decay_rate", "embedding_size"]
+parameter_space:
+  alpha:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  beta:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  decay_rate:
+    type: "uniform"
+    low: 0.90
+    high: 0.99
+  embedding_size:
+    type: "choice"
+    values: [32, 64, 128, 256, 512]

@@ -1,0 +1,53 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+# --- architecture ---
+embedding_size: 64
+feat_embed_dim: 64
+num_fc_layers: 4        # GMLP Linear-stack depth
+hidden_dim: 512         # GMLP hidden width
+act_fn: 'tanh'          # GMLP activation (tanh + LayerNorm + Dropout per hidden layer)
+v_dropout: 0.0          # GMLP dropout (visual tower)
+t_dropout: 0.0          # GMLP dropout (text tower)
+aggr_mode: 'add'        # bipartite conv aggregation (symmetric deg-normalized sum)
+
+# --- TPS (topological pruning sampling) ---
+knn_k: 10               # FREEDOM mm-kNN graph degree (the TPS input graph)
+mm_image_weight: 0.1    # image/text blend weight for the TPS input graph
+tps_K: 10               # top-K neighbours retained per row after MI pruning
+
+# --- contrastive / regularization ---
+alpha1: 1.2             # Ncontrast (topology contrastive) weight -- the ONLY aux loss
+tau1: 1.0               # Ncontrast temperature
+# dead in official TMLP (preferences None -> reg ≡ 0); not searched
+reg_weight: 0.0         # in-model preference L2 (preferences are None -> always 0)
+
+# --- optimization ---
+learning_rate: 0.0001
+weight_decay: 0.0       # optimizer L2 off (reg handled in-model, and it is 0)
+learning_rate_scheduler: [1.0, 50]
+
+hyper_parameters: ["alpha1", "learning_rate", "aggr_mode", "tau1", "knn_k", "tps_K"]
+parameter_space:
+  alpha1:
+    type: "loguniform"
+    low: 1.0e-2
+    high: 5.0
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  aggr_mode:
+    type: "choice"
+    values: ["add", "mean"]
+  tau1:
+    type: "loguniform"
+    low: 0.1
+    high: 5.0
+  knn_k:
+    type: "choice"
+    values: [5, 10, 15, 20]
+  tps_K:
+    type: "choice"
+    values: [3, 5, 10]

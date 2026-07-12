@@ -1,0 +1,27 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+num_ui_layers: 2
+num_layers: 2
+knn_k: 10
+lambda_coeff: 0.9
+alpha: 0.2
+beta: 0.1
+temperature: 0.2
+mask_rate: 0.1
+reg_weight: 1.0e-4
+
+learning_rate: 1.0e-3
+weight_decay: 0.0
+
+hyper_parameters: ["learning_rate", "reg_weight", "alpha", "beta", "lambda_coeff", "knn_k", "temperature"]
+parameter_space:
+  learning_rate: {type: loguniform, low: 1.0e-5, high: 1.0e-2}
+  reg_weight: {type: loguniform, low: 1.0e-6, high: 1.0e-2}
+  alpha: {type: loguniform, low: 1.0e-3, high: 1.0e0}
+  beta: {type: loguniform, low: 1.0e-3, high: 1.0e0}
+  lambda_coeff: {type: choice, values: [0.5, 0.7, 0.9, 1.0]}
+  knn_k: {type: choice, values: [5, 10, 15, 20]}
+  temperature: {type: choice, values: [0.1, 0.2, 0.5]}

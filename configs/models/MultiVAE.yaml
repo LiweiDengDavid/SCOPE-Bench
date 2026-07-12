@@ -1,0 +1,40 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: false
+
+latent_dim: 200 # Latent dimension
+mlp_hidden_size: 600 # First-layer dimension of encoder/decoder
+num_layers: 1 # Number of hidden layers (each subsequent layer halves in size)
+dropout_rate: 0.5 # Dropout rate (VAE typically requires higher dropout)
+
+anneal_cap: 0.2 # KL annealing upper bound
+total_anneal_steps: 200000 # Total annealing steps
+
+optimizer: "adam"
+learning_rate: '1e-3'
+
+hyper_parameters: ["latent_dim", "mlp_hidden_size", "num_layers", "dropout_rate", "anneal_cap", "learning_rate"]
+
+parameter_space:
+  latent_dim:
+    type: "choice"
+    values: [64, 128, 256, 512]
+  mlp_hidden_size:
+    type: "choice"
+    values: [64, 128, 256, 512]
+  num_layers:
+    type: "choice"
+    values: [1, 2, 3]
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  anneal_cap:
+    type: "uniform"
+    low: 0.1
+    high: 0.5
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+valid_metric: "ndcg@10"

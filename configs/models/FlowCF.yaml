@@ -1,0 +1,40 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: false
+
+n_steps: 9 # Discretization steps for flow matching
+s_steps: 2 # Sampling steps during inference
+dims_mlp: [300, 300] # MLP dimensions for flow model
+time_embedding_size: 10 # Timestep embedding dimension
+embedding_size: 128 # Not directly used but kept for compatibility
+dropout_rate: 0.1
+init_dropout: 0.0
+
+learning_rate: 0.001
+weight_decay: 0.0
+learning_rate_scheduler: null
+
+hyper_parameters: ["learning_rate", "n_steps", "s_steps", "time_embedding_size", "dropout_rate", "weight_decay"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  n_steps:
+    type: choice
+    values: [5, 7, 9, 11, 15]
+  s_steps:
+    type: choice
+    values: [1, 2, 3, 4]
+  # dims_mlp stays a runtime architecture list, not an HPO choice.
+  time_embedding_size:
+    type: choice
+    values: [8, 10, 12, 16]
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3

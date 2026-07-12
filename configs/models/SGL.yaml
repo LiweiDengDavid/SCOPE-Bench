@@ -1,0 +1,45 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: false
+
+embedding_size: 64 # Embedding dimension
+num_layers: 3 # Number of graph convolution layers
+ssl_weight: 0.1 # Self-supervised loss weight
+temperature: 0.2 # Contrastive learning temperature (paper default 0.2)
+require_pow: true # L2 reg as ||x||_p^p, matching RecBole SGL (regularization mode)
+# aug_type options: ND (Node Dropout) or ED (Edge Dropout). RW (Random Walk) is NOT supported and will raise NotImplementedError.
+aug_type: "ND"
+drop_ratio: 0.1 # Graph augmentation dropout rate
+
+learning_rate: '1e-3'
+weight_decay: 0.0  # optimizer L2 — kept off; embedding L2 is applied in-model
+embedding_weight_decay: '1e-4'  # in-model EmbLoss coefficient (RecBole-faithful)
+
+hyper_parameters: ["embedding_size", "num_layers", "ssl_weight", "temperature", "drop_ratio", "learning_rate", "embedding_weight_decay"]
+parameter_space:
+  embedding_size:
+    type: "choice"
+    values: [32, 64, 128, 256, 512]
+  num_layers:
+    type: "choice"
+    values: [1, 2, 3, 4, 5]
+  ssl_weight:
+    type: "uniform"
+    low: 0.01
+    high: 0.5
+  temperature:
+    type: "uniform"
+    low: 0.05
+    high: 0.2
+  drop_ratio:
+    type: "uniform"
+    low: 0.05
+    high: 0.3
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  embedding_weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3

@@ -1,0 +1,22 @@
+{
+  "source_file": "Qwen3_7_Max_full_t0p3_seed42_scores.jsonl",
+  "total_records": 153561,
+  "valid_integer_scores": 114598,
+  "null_scores": 38963,
+  "api_error_records": 0,
+  "parse_error_records": 0,
+  "score_distribution": {
+    "0": 82980,
+    "1": 16319,
+    "2": 5799,
+    "3": 8113,
+    "4": 1270,
+    "5": 111,
+    "6": 6
+  },
+  "confidence_distribution": {
+    "high": 111083,
+    "low": 39239,
+    "medium": 3239
+  }
+}

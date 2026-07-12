@@ -1,0 +1,25 @@
+is_federated: true
+is_multimodal_model: false
+is_sequential: false
+learning_rate_scheduler: null
+
+embedding_size: 512
+
+optimizer: 'sgd'
+
+learning_rate: 1e-2
+weight_decay: 1e-5
+
+hyper_parameters: ["learning_rate", "weight_decay", "embedding_size"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  embedding_size:
+    type: "choice"
+    values: [32, 64, 128, 256, 512]
