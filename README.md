@@ -1,12 +1,14 @@
-# SCOPE-Bench: Short-Video Cognitive Depth Evaluation Benchmark
+# SCOPE-Bench:  Rethinking the Attention Economy
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
-[![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg)](https://pytorch.org/)
+[License: MIT](LICENSE)
+[Python 3.10+](https://www.python.org/)
+[PyTorch 2.0+](https://pytorch.org/)
 
 Official PyTorch implementation of **SCOPE-Bench** (**S**hort-video **CO**gnitive de**P**th **E**valuation Benchmark), which studies both recommendation accuracy and the content depth of recommended short videos.
 
 > **Figure placeholder:** add the benchmark overview to `assets/overview.png` before release.
+
+
 
 ## 🎯 Overview
 
@@ -19,10 +21,12 @@ All metrics share the same top-k settings (`[10, 20, 50]` by default). The repos
 
 ## 📊 Benchmark
 
-| Dataset | Users | Items | Interactions |
-| --- | ---: | ---: | ---: |
-| ShortVideoSampled | 4,450 | 25,534 | 74,869 |
-| ShortVideoFull | 9,324 | 132,166 | 626,747 |
+
+| Dataset           | Users | Items   | Interactions |
+| ----------------- | ----- | ------- | ------------ |
+| ShortVideoSampled | 4,450 | 25,534  | 74,869       |
+| ShortVideoFull    | 9,324 | 132,166 | 626,747      |
+
 
 The primary benchmark contains 14 baselines: **BPR, LightGCN, NCF, FlowCF, VBPR, BM3, DiffMM, GRCN, REARM, FREEDOM, MGCN, LGMRec, LATTICE,** and **FITMM**.
 
@@ -40,6 +44,8 @@ SCOPE-Bench/
 └── run_scope_baselines.sh  # Primary benchmark launcher
 ```
 
+
+
 ## 📝 Installation
 
 ```bash
@@ -53,6 +59,8 @@ source .venv/bin/activate
 pip install torch torchvision
 pip install -e ".[multimodal,scoring,hpo]"
 ```
+
+
 
 ## 👉 Data Preparation
 
@@ -118,6 +126,8 @@ If you find SCOPE-Bench useful, please cite our work:
 ```bibtex
 TODO: <SCOPE_BENCH_BIBTEX>
 ```
+
+
 
 ## 📄 License
 
