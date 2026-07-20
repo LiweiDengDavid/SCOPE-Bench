@@ -2,8 +2,8 @@
 
 Place the downloaded or locally generated full Qwen artifacts here:
 
-- `Qwen3_7_Max_full_t0p3_seed42_scores.jsonl`
-- `Qwen3_7_Max_full_t0p3_seed42_scores.csv`
+- `Qwen3_7_Max_CDS_scores.jsonl`
+- `Qwen3_7_Max_CDS_scores.csv`
 
 These files are excluded from Git because of their size. The public download URL will be added before release.
 

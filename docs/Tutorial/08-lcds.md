@@ -37,7 +37,7 @@ greater cognitive depth.
 
 ShortVideoSampled and ShortVideoFull enable LCDS by default. Normal validation and final-test evaluation append `A-LCDS@K` and `E-LCDS@K` to the same result dictionary, log line, result CSV, HPO metrics, and recommendation metadata as Recall/NDCG/Precision. The cutoffs are always taken from `evaluation.topk`.
 
-The evaluator loads `scoring/results/Qwen3_7_Max_full_t0p3_seed42_scores.jsonl` once per process and caches the item gain table across evaluator instances. It fails early if the score file or item-mapping artifacts are missing.
+The evaluator loads `scoring/results/Qwen3_7_Max_CDS_scores.jsonl` once per process and caches the item gain table across evaluator instances. It fails early if the score file or item-mapping artifacts are missing.
 
 ## Export Test Recommendations
 
@@ -67,7 +67,7 @@ without running any model:
 python scripts/compute_lcds_from_recommendations.py \
   --recommendations outputs/recommendations/ShortVideoFull/test_export/*/*.json \
   --dataset-dir datasets/ShortVideoFull \
-  --cds-jsonl scoring/results/Qwen3_7_Max_full_t0p3_seed42_scores.jsonl \
+  --cds-jsonl scoring/results/Qwen3_7_Max_CDS_scores.jsonl \
   --topk 10 20 50 \
   --output outputs/lcds/ShortVideoFull/lcds_summary.csv
 ```

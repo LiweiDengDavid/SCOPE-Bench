@@ -49,7 +49,7 @@ def parse_args() -> argparse.Namespace:
         "--cds-jsonl",
         "--cpd-jsonl",
         dest="cds_jsonl",
-        default="scoring/results/Qwen3_7_Max_full_t0p3_seed42_scores.jsonl",
+        default="scoring/results/Qwen3_7_Max_CDS_scores.jsonl",
         help=(
             "CDS annotation JSONL. --cpd-jsonl is accepted as a deprecated alias."
         ),

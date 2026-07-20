@@ -103,7 +103,7 @@ evaluation:
 # label file and the required item-id mapping artifacts are available.
 lcds:
   enabled: false
-  cds_jsonl: "scoring/results/Qwen3_7_Max_full_t0p3_seed42_scores.jsonl"
+  cds_jsonl: "scoring/results/Qwen3_7_Max_CDS_scores.jsonl"
   dataset_dir: ""
   gain_divisor: 6.0
 

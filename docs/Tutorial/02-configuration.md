@@ -88,7 +88,7 @@ Supported metric names are `Recall`, `Precision`, `NDCG`, `MAP`, `MRR`, `Hit`, `
 ```yaml
 lcds:
   enabled: true
-  cds_jsonl: "scoring/results/Qwen3_7_Max_full_t0p3_seed42_scores.jsonl"
+  cds_jsonl: "scoring/results/Qwen3_7_Max_CDS_scores.jsonl"
   dataset_dir: ""  # empty resolves to data_path/dataset
   gain_divisor: 6.0
 ```

@@ -1,5 +1,5 @@
 {
-  "source_file": "Qwen3_7_Max_full_t0p3_seed42_scores.jsonl",
+  "source_file": "Qwen3_7_Max_CDS_scores.jsonl",
   "total_records": 153561,
   "valid_integer_scores": 114598,
   "null_scores": 38963,
