@@ -43,7 +43,7 @@ SCOPE-Bench extends the open-source ShortVideo dataset with CDS annotations for 
 
 The downloadable training bundles apply click-positive filtering and retain users with at least four positive interactions; their post-filter statistics and split details are documented in [datasets/README.md](datasets/README.md).
 
-The primary benchmark contains 14 baselines: **BPR, LightGCN, NCF, FlowCF, VBPR, BM3, DiffMM, GRCN, REARM, FREEDOM, MGCN, LGMRec, LATTICE,** and **FITMM**.
+The paper reports benchmark results for 14 representative baselines: **BPR, LightGCN, NCF, FlowCF, VBPR, BM3, DiffMM, GRCN, REARM, FREEDOM, MGCN, LGMRec, LATTICE,** and **FITMM**. Beyond this paper-facing suite, the repository provides **54 model implementations** spanning centralized ID-only, centralized multimodal, federated ID-only, federated multimodal, and sequential recommendation. See [docs/models.md](docs/models.md) for the complete list and model references.
 
 ## 📂 Project Structure
 
@@ -86,7 +86,7 @@ Download the benchmark artifacts and source dataset from:
 - Full Qwen CDS scores: [Google Drive](https://drive.google.com/drive/folders/101pyI9ulBXXYL1lt8quBOXaDumcu3Hpw?usp=drive_link)
 
 > [!IMPORTANT]
-> SCOPE-Bench is built upon the WWW2025 ShortVideo dataset, but the original release contains data-alignment inconsistencies. For reliable reproduction, we recommend using the corrected and prepared benchmark data provided by SCOPE-Bench instead of directly using the original files. The identified issues and our repair procedure are documented in [docs/dataset_repair.md](docs/dataset_repair.md).
+> SCOPE-Bench builds upon the WWW2025 ShortVideo dataset. During data preparation, we observed that a small portion of the ASR transcripts in the public release were not aligned with their corresponding videos. We therefore manually reviewed and corrected the affected alignments and provide a harmonized, benchmark-ready version of the data. We recommend using this prepared release when reproducing SCOPE-Bench results. The corresponding preprocessing and alignment steps are documented in [docs/dataset_repair.md](docs/dataset_repair.md).
 
 Place the downloaded artifacts at:
 
@@ -102,7 +102,7 @@ Validate the dataset before training:
 python scripts/validate_short_video_bundle.py --datasets ShortVideoSampled
 ```
 
-Dataset contents and the original data-alignment repair are described in [datasets/README.md](datasets/README.md) and [docs/dataset_repair.md](docs/dataset_repair.md).
+
 
 ## 🚀 Quick Start
 
@@ -139,11 +139,11 @@ For advanced usage, see [model details](docs/models.md), [configuration](docs/Tu
 
 ## 🤝 Acknowledgements
 
-SCOPE-Bench is built upon the original [WWW2025 ShortVideo dataset](https://github.com/tsinghua-fib-lab/ShortVideo_dataset). Its implementation also draws upon and takes inspiration from [MMRec](https://github.com/enoche/MMRec), [RecBole](https://github.com/RUCAIBox/RecBole), [Tenrec](https://github.com/yuangh-x/2022-NIPS-Tenrec), and [FedVLR](https://github.com/mtics/FedVLR). We sincerely thank their authors and contributors for making these valuable resources publicly available.
+SCOPE-Bench is built upon the original [ShortVideo dataset](https://github.com/tsinghua-fib-lab/ShortVideo_dataset). Its implementation also draws upon and takes inspiration from [MMRec](https://github.com/enoche/MMRec), [RecBole](https://github.com/RUCAIBox/RecBole), [Tenrec](https://github.com/yuangh-x/2022-NIPS-Tenrec), and [FedVLR](https://github.com/mtics/FedVLR). We sincerely thank their authors and contributors for making these valuable resources publicly available.
 
 ## 🌟 Citation
 
-If you find SCOPE-Bench useful, please cite our work:
+If you find SCOPE-Bench useful, please consider citing our work and giving this repository a star ⭐.
 
 The official BibTeX entry is **coming soon**.
 
