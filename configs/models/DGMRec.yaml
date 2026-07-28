@@ -1,0 +1,107 @@
+# DGMRec -- Disentangling and Generating Modalities for Recommendation (SIGIR'25)
+#
+# Faithful baseline of the paper's DGMRec model (official repo:
+# https://github.com/HimTo-Kim/DGMRec, src/models/dgmrec.py + src/utils/mi_estimator.py),
+# run in COMPLETE-MODALITY mode -- the standard MMRec baseline protocol.
+#
+# DGMRec disentangles each modality into a shared "general" view and a
+# modality-"specific" view, gates them with per-user modality-preference filters,
+# propagates on per-modality cosine-kNN item graphs, and fuses with a LightGCN CF
+# branch. The loss combines BPR + a disentangle term (CLUBSample MI upper bound
+# between specific/general + InfoNCE) + a generation/reconstruction term
+# (cross-modal & specific generators + raw-feature decoders on perturbed detached
+# embeddings) + alignment terms (UI + backbone/modality) + embedding L2.
+#
+# Complete-modality deviations from the shipped code (documented in dgmrec.py):
+#   * The shipped code crashes at missing_modal=0; here the missing sets are EMPTY,
+#     so the t/v/tv index paths degenerate to "all batch items" and the missing-
+#     modal generation / periodic adjacency refresh are skipped.
+#   * The CLUB estimators are created lazily on the first pre_epoch_processing and
+#     held outside the nn.Module registry, so they stay OUT of the main optimizer
+#     (their own Adam trains them) -- matching the official init_mi_estimator-after-
+#     optimizer ordering.
+#   * The missing-modality data harness is a documented future option, not ported.
+#   * alpha (missing-mode adjacency-blend coefficient) is intentionally omitted --
+#     it only affects the un-ported missing path.
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+
+# --- graph propagation (# Baby defaults from the official DGMRec.yaml) ---
+# Official n_ui_layers is exposed here as num_ui_layers (n_ui_layers/n_layers are
+# reserved deprecated keys in this repo).
+num_ui_layers: 3
+n_mm_layers: 2
+knn_k: 10
+
+# --- disentangle / alignment weights + InfoNCE temperatures ---
+lambda_1: 0.01
+lambda_2: 0.01
+infoNCETemp: 0.4
+alignBMTemp: 0.4
+alignUITemp: 0.2
+
+# --- generation / reconstruction / regularization literals (hoisted to YAML) ---
+# Official complete/missing-only default is 0.05 (the shipped code uses
+# `config.get('mse_loss_weight', 0.1 if new_items else 0.05)`; the 0.1 in the
+# reference implementation is the new-item value). Verified via A/B against the
+# official model with mse_loss_weight=0.05.
+mse_loss_weight: 0.05    # loss_gen MSE scaling (official MSELoss weight, complete-modality)
+recon_weight: 0.1        # decoder raw-feature reconstruction MSE scaling
+perturb_eps: 0.1         # train-only perturbation magnitude
+reg_weight_cf: 1.0e-5    # CF-embedding L2 coefficient
+reg_weight_modal: 0.1    # final modal-embedding L2 coefficient
+
+# --- CLUBSample MI estimator (trained separately in pre_epoch_processing) ---
+club_lr: 1.0e-4          # the estimator's own Adam learning rate
+club_steps: 5            # estimator training steps per epoch
+club_sample_size: 2048   # random items sampled per estimator step
+mi_hidden_dim: 64        # CLUBSample hidden width
+
+learning_rate: 0.001
+weight_decay: 0.0
+# Official LR schedule is LambdaLR(0.96 ** (epoch / 50)); approximated here by the
+# framework's StepLR (step decay every 50 epochs), matching the MGCN-family
+# convention in this repo.
+learning_rate_scheduler: [0.96, 50]
+
+hyper_parameters: [
+  "learning_rate",
+  "lambda_1",
+  "lambda_2",
+  "knn_k",
+  "n_mm_layers",
+  "infoNCETemp",
+  "alignBMTemp",
+  "alignUITemp",
+]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  lambda_1:
+    type: "loguniform"
+    low: 1.0e-4
+    high: 1.0e-1
+  lambda_2:
+    type: "loguniform"
+    low: 1.0e-4
+    high: 1.0e-1
+  knn_k:
+    type: "choice"
+    values: [5, 10, 15, 20]
+  n_mm_layers:
+    type: "choice"
+    values: [1, 2, 3]
+  infoNCETemp:
+    type: "choice"
+    values: [0.2, 0.4, 0.6, 0.8]
+  alignBMTemp:
+    type: "choice"
+    values: [0.2, 0.4, 0.6, 0.8]
+  alignUITemp:
+    type: "choice"
+    values: [0.2, 0.4, 0.6, 0.8]

@@ -1,0 +1,78 @@
+# BGCC -- Behavior-Guided Candidate Calibration (AAAI'26)
+#
+# Faithful baseline of the paper's BGCC model (official repo: BRIDGE,
+# https://github.com/LIZESHENG13/bridge, src/models/bridge.py). BGCC converts
+# training-only co-user item co-occurrence into signed candidate evidence and
+# uses it to calibrate the item scores produced by a multimodal backbone. The
+# backbone keeps the representation space stable; behavior evidence acts only
+# where ranking is decided. A spectral (SVD) low/high split of the backbone
+# item embeddings provides an optional high-frequency residual signal, and a
+# learned per-(user,item) gate meters the calibration strength.
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+
+# Backbone that BGCC calibrates. The official repo wraps its DualFrequencyEncoder
+# multimodal graph encoder; here the standalone wrapper uses a compact,
+# self-contained multimodal graph backbone ("mgcn"). Unsupported -> ValueError.
+backbone: "mgcn"
+num_layers: 2
+
+# --- behavior-guided candidate calibration knobs (ref bridge.py) ---
+behavior_weight: 0.4          # calibration strength gate; 0 disables calibration
+behavior_topk: 1000           # co-user item-item similarity sparsification
+behavior_eval_topk: 200       # base top-K candidate shortlist that calibration is restricted to (ref repo BRIDGE.yaml)
+behavior_sim_method: "cosine" # cosine | jaccard | logcooc | cooc | raw
+behavior_aggregation: "sum_sqrt"  # sum | mean | sum_sqrt
+behavior_score_norm: "z"      # z | minmax | none
+
+# --- spectral high-frequency residual (ref _frequency_views) ---
+num_freq_bands: 3             # SVD spectral bands over item embeddings
+low_band_count: 1            # first N bands = low-frequency (shared) view
+residual_weight: 0.0          # optional high-frequency residual correction weight
+
+# --- learned calibration gate (ref _pair_gate) ---
+gate_reg_weight: 0.001        # pulls mean gate toward gate_target
+gate_target: 0.5
+
+reg_weight: 0.001
+learning_rate: 0.0001
+weight_decay: 0.0
+
+hyper_parameters: [
+  "reg_weight",
+  "learning_rate",
+  "behavior_weight",
+  "behavior_topk",
+  "behavior_eval_topk",
+  "num_freq_bands",
+  "residual_weight",
+]
+parameter_space:
+  reg_weight:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  behavior_weight:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  behavior_topk:
+    type: "choice"
+    values: [100, 500, 1000, 2000]
+  behavior_eval_topk:
+    type: "choice"
+    values: [50, 100, 200, 500]
+  num_freq_bands:
+    type: "choice"
+    values: [2, 3, 4]
+  residual_weight:
+    type: "uniform"
+    low: 0.0
+    high: 1.0

@@ -1,0 +1,36 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+# Principal-subgraph mode: "local" (degree-pruned, refreshed per epoch — the
+# official shipped best config) or "global" (low-rank SVD principal subgraph).
+mode: "local"
+
+embedding_size: 64
+num_layers: 1          # item-item (mm_adj) propagation layers (repo n_mm_layers)
+num_ui_layers: 2       # user-item LightGCN layers (repo n_ui_layers)
+knn_k: 10
+mm_image_weight: 0.1
+dropout_rate: 0.2      # InfoNCE self-view dropout (repo dropout)
+temperature: 0.2       # InfoNCE contrastive temperature (repo PGL.calculate_loss)
+principal_ratio: 0.25  # global-mode top/bottom singular-value fraction
+
+# prune_ratio is the edge DROP fraction; keep = 1 - prune_ratio. prune_ratio=0.7
+# reproduces the repo's local mode, which keeps ~30% of edges (degree_len=0.3*|E|).
+prune_ratio: 0.7
+
+learning_rate: 0.001
+weight_decay: 0.0
+# reg_weight is the InfoNCE (cl_loss) coefficient in the total loss
+# mf_loss + reg_weight * cl_loss (repo reg_weight); there is no embedding-L2 term.
+reg_weight: 0.0
+learning_rate_scheduler: [0.96, 50]
+
+hyper_parameters: ["reg_weight", "dropout_rate", "mode", "num_ui_layers", "knn_k", "prune_ratio"]
+parameter_space:
+  reg_weight: {type: loguniform, low: 1.0e-5, high: 1.0e0}
+  dropout_rate: {type: choice, values: [0.0, 0.1, 0.2, 0.3, 0.5]}
+  mode: {type: choice, values: ["local", "global"]}
+  num_ui_layers: {type: choice, values: [1, 2, 3, 4]}
+  knn_k: {type: choice, values: [5, 10, 15, 20, 30]}
+  prune_ratio: {type: choice, values: [0.5, 0.6, 0.7, 0.8]}

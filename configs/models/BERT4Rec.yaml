@@ -1,0 +1,49 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: true
+
+hidden_size: 64
+num_layers: 3
+num_attention_heads: 8
+intermediate_size: 1024
+hidden_act: "gelu"
+embedding_size: 64  # Same as hidden_size for consistency
+hidden_dropout_rate: 0.1
+attention_dropout_rate: 0.1
+dropout_rate: 0.1  # For compatibility with base class
+mask_prob: 0.15
+max_predictions_per_seq: 20
+initializer_range: 0.02
+# MLM corruption split of the masked positions (Devlin et al. 0.8/0.1/0.1):
+# fraction -> [MASK], fraction -> random real item, remainder left unchanged.
+mask_replace_with_mask_prob: 0.8
+mask_replace_with_random_prob: 0.1
+
+learning_rate: 0.1
+weight_decay: 0.0001
+
+loss_type: "mlm"  # Masked Language Modeling
+
+hyper_parameters: ["learning_rate", "weight_decay", "num_layers", "hidden_dropout_rate", "mask_prob", "hidden_size"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4]
+  hidden_dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  mask_prob:
+    type: choice
+    values: [0.1, 0.15, 0.2, 0.3, 0.4]
+  hidden_size:
+    type: "choice"
+    values: [32, 64, 128, 256]

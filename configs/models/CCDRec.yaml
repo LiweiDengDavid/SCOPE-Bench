@@ -1,0 +1,85 @@
+# CCDRec -- Curriculum Conditional Diffusion Recommendation (AAAI'25 oral)
+#
+# Faithful baseline of the paper's CCDRec model (official code:
+# CCDRec_code/CCDRec/src/models/ccdrec.py + diffusion_ver15.py). A FREEDOM
+# multimodal-graph backbone is embedded as an INTERNAL module (standalone
+# wrapper, mirrors DA-MRS / BeFA / BGCC) and augmented with a conditional
+# diffusion process over item-ID embeddings: a single-head self-attention
+# denoiser (conditioned on projected text/image features + a timestep embedding)
+# predicts x0; DMA blends that prediction into the mm-propagated id graph; NDI
+# adds a second BPR on diffusion-derived negatives; and CNS advances those
+# negatives easy->hard with the epoch. Defaults follow the official Baby config.
+#
+# Deviations (documented in ccdrec.py): NO-arg pre_epoch_processing (the model
+# counts epochs, incl. the official dropout<=0 counter-freeze quirk); the
+# per-epoch full reverse-chain sample() is a lazy resample behind a dirty flag,
+# seeded eval_sample_seed + refresh index (deterministic eval per cycle, iid
+# snapshots across epochs; buffers feed next epoch CNS and start as zeros where
+# official None would crash pre-first-eval NDI); dense n_users x n_items
+# negative mask -> per-batch CSR row x candidate-column slice (duplicates
+# masked by position, official semantics); dead UNet / denoise_model_uncon and
+# the CUDA-env side effect not ported; generic w/weight renamed ccdrec_blend_w
+# / ccdrec_ndi_weight; official dropout -> dropout_rate.
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+# --- FREEDOM backbone ---
+embedding_size: 64
+feat_embed_dim: 64          # must equal embedding_size (diffusion conditioning space)
+n_mm_layers: 1
+num_ui_layers: 2
+knn_k: 10
+mm_image_weight: 0.1
+dropout_rate: 0.8           # degree-sensitive UI edge pruning (official `dropout`)
+reg_weight: 0.0             # modality-BPR coefficient (official Baby: 0.0)
+
+# --- diffusion ---
+diff_weight: 1.0            # diffusion-objective weight (paper's primary searched knob)
+timesteps: 20
+beta_start: 1.0e-4
+beta_end: 0.02
+beta_sche: "linear"        # linear | exp | cosine
+eval_sample_seed: 999      # fixes the lazy eval reverse-chain draw (deterministic eval)
+
+# --- DMA / NDI ---
+ccdrec_blend_w: 0.5         # DMA blend of diffusion prediction vs id-graph (official `w`)
+ccdrec_ndi_weight: 0.8      # NDI second-BPR weight (official `weight`)
+
+# --- CNS (curriculum negative schedule) ---
+sample_k: 0.1              # top-fraction of scored candidates to pick the hard negative from
+candidate_fraction: 0.1    # fraction of items drawn as the candidate pool (official literal 0.1)
+curriculum_start_epoch: 5
+curriculum_step: 5
+curriculum_end_epoch: 30
+
+learning_rate: 5.0e-4
+weight_decay: 0.0
+train_batch_size: 512       # official Baby value (src/configs/model/ccdrec.yaml); framework default is 2048
+
+hyper_parameters: [
+  "diff_weight",
+  "learning_rate",
+  "ccdrec_blend_w",
+  "ccdrec_ndi_weight",
+  "knn_k",
+]
+parameter_space:
+  diff_weight:
+    type: "choice"
+    values: [0.5, 1.0, 2.0]   # official ccdrec.yaml search grid
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-4
+    high: 1.0e-2
+  ccdrec_blend_w:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  ccdrec_ndi_weight:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  knn_k:
+    type: "choice"
+    values: [5, 10, 15, 20]

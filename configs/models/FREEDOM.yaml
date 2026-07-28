@@ -1,0 +1,32 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+feature_embedding_size: 64
+num_mm_layers: 3
+num_ui_layers: 3
+knn_k: 10
+mm_image_weight: 0.1
+dropout_rate: 0.9  # degree-sensitive edge pruning: keep ~10% of UI edges
+
+learning_rate: 0.1
+weight_decay: 0.00001
+reg_weight: 0.00001  # modality-loss coefficient, decoupled from optimizer L2
+
+hyper_parameters: ["learning_rate", "weight_decay", "dropout_rate", "knn_k"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  dropout_rate:
+    type: "choice"
+    values: [0.8, 0.9]  # FREEDOM canonical denoising grid (keep 10-20% of UI edges)
+  knn_k:
+    type: "choice"
+    values: [5, 10, 15, 20, 30]

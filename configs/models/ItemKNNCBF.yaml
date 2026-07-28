@@ -1,0 +1,16 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+knn_k: 10
+shrink: 10
+require_training: false
+max_epochs: 1
+hyper_parameters: ['shrink', 'knn_k']
+parameter_space:
+  shrink:
+    type: choice
+    values: [0, 5, 10, 20, 50, 100]
+  knn_k:
+    type: "choice"
+    values: [5, 10, 15, 20, 30]

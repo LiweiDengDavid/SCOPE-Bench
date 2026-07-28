@@ -1,0 +1,43 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: true
+
+hidden_size: 64
+num_layers: 3
+num_attention_heads: 8
+inner_size: 256
+embedding_size: 64
+start_expert_num: 4
+temporal_expert_num: 4
+dropout_rate: 0.1
+use_contrastive: true
+temperature: 0.2
+ssl_weight: 0.1  # contrastive loss weight
+
+learning_rate: 0.001
+weight_decay: 0.0001
+
+hyper_parameters: ["learning_rate", "weight_decay", "dropout_rate", "num_layers", "num_attention_heads", "temperature"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-2
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4]
+  num_attention_heads:
+    type: "choice"
+    values: [1, 2, 4, 8]
+  temperature:
+    type: "uniform"
+    low: 0.05
+    high: 1.0

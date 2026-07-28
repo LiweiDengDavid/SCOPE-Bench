@@ -1,0 +1,148 @@
+# REARM -- Refining Contrastive Learning and Homography Relations (ACM MM'25)
+#
+# Faithful baseline of the paper's REARM model (official repo:
+# https://dl.acm.org/doi/10.1145/3746027.3755779). REARM rebuilds two homography
+# graphs (user-interest similarity + item co-occurrence, each blended with its
+# co-occurrence / kNN counterpart) and one heterography (user-item) graph from
+# raw v_feat/t_feat + interactions, fuses the projected modality features through
+# embed_dim=1 self/cross attention, and refines a modal-shared channel via a
+# meta-network low-rank transform. Losses: BPR + InfoNCE (aligns the v/t halves)
+# + an orthogonal (diff) constraint. L2 is realised through the optimizer's
+# weight_decay (their AdamW pattern), NOT an in-graph reg term.
+#
+# Defaults are the README Baby-best command.
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+
+# L2 regularization is applied via AdamW weight_decay (== their reg_weight);
+# there is no in-graph reg term. weight_decay is therefore the live L2 knob.
+optimizer: "adamw"
+learning_rate: 0.00005
+weight_decay: 0.0005
+
+# --- graph propagation depths ---
+num_layers: 4        # heterography (user-item) propagation depth (their n_layers)
+n_ii_layers: 1       # item homography propagation depth
+n_uu_layers: 1       # user homography propagation depth
+
+# --- graph construction (co-occurrence sample counts + kNN sizes + blends) ---
+# The official utils/configurator.py TIES num_user_co = user_knn_k and
+# num_item_co = item_knn_k (= 40 / 10 for the README Baby run); the defaults
+# below reproduce that tie. Our HPO deliberately DECOUPLES num_*_co from
+# *_knn_k so the co-occurrence sample counts and kNN neighbourhood sizes can
+# be searched independently.
+num_user_co: 40      # top-k co-occurring users kept per user (official: = user_knn_k)
+num_item_co: 10      # top-k co-occurring items kept per item (official: = item_knn_k)
+user_knn_k: 40       # user-interest kNN neighbourhood size
+item_knn_k: 10       # item-similarity kNN neighbourhood size
+co_occur_top_n: 200  # per-row neighbour cap of the cached co-occurrence dict;
+                     # mirrors the official helper.creat_dict_graph constant
+                     # (200). Plain non-searched key (not in hyper_parameters).
+uu_co_weight: 0.4    # co-occurrence weight in the strengthened user homography
+ii_co_weight: 0.2    # co-occurrence weight in the strengthened item homography
+u_mm_image_weight: 0.2  # visual share of the user interest similarity graph
+i_mm_image_weight: 0.0  # visual share of the item similarity graph
+
+# --- attention dropout (their own knobs; eval() turns them off) ---
+s_drop: 0.4          # self-attention dropout
+m_drop: 0.6          # mutual (cross) attention dropout
+
+# --- meta-network + contrastive / orthogonal losses ---
+rank: 3              # meta-network low-rank decomposition dim k
+cl_tmp: 0.6          # InfoNCE temperature
+cl_loss_weight: 0.000005   # contrastive (InfoNCE) loss weight; 0 disables it
+diff_loss_weight: 0.00005  # orthogonal (diff) loss weight; 0 disables it
+
+hyper_parameters: [
+  "learning_rate",
+  "weight_decay",
+  "num_layers",
+  "n_ii_layers",
+  "n_uu_layers",
+  "num_user_co",
+  "num_item_co",
+  "user_knn_k",
+  "item_knn_k",
+  "uu_co_weight",
+  "ii_co_weight",
+  "u_mm_image_weight",
+  "i_mm_image_weight",
+  "s_drop",
+  "m_drop",
+  "rank",
+  "cl_tmp",
+  "cl_loss_weight",
+  "diff_loss_weight",
+]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-2
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-6
+    high: 1.0e-1
+  num_layers:
+    type: "choice"
+    values: [2, 3, 4, 5]
+  n_ii_layers:
+    type: "choice"
+    values: [1, 2]
+  n_uu_layers:
+    type: "choice"
+    values: [1, 2]
+  num_user_co:
+    type: "choice"
+    values: [5, 10, 20, 40]
+  num_item_co:
+    type: "choice"
+    values: [5, 10, 20]
+  user_knn_k:
+    type: "choice"
+    values: [10, 25, 40, 45]
+  item_knn_k:
+    type: "choice"
+    values: [5, 10, 15]
+  uu_co_weight:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  ii_co_weight:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  u_mm_image_weight:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  i_mm_image_weight:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  s_drop:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  m_drop:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  rank:
+    type: "choice"
+    values: [3, 5, 7]
+  cl_tmp:
+    type: "loguniform"
+    low: 1.0e-2
+    high: 2.0
+  cl_loss_weight:
+    type: "loguniform"
+    low: 1.0e-6
+    high: 1.0e-2
+  diff_loss_weight:
+    type: "loguniform"
+    low: 1.0e-6
+    high: 1.0e-2

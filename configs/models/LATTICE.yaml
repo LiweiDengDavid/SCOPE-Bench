@@ -1,0 +1,36 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+feature_embedding_size: 64
+weight_size: [64, 64]  # len() = number of graph-conv layers (n_ui_layers)
+num_layers: 1
+knn_k: 10
+beta: 0.1
+
+learning_rate: 0.1
+weight_decay: 0.0  # optimizer L2 off; in-model L2 applied once via reg_weight
+reg_weight: 0.1  # in-model embedding-L2 coefficient
+learning_rate_scheduler: [0.96, 50]
+
+hyper_parameters: ["reg_weight", "learning_rate", "beta", "num_layers", "knn_k"]
+parameter_space:
+  reg_weight:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  beta:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4, 5]
+  knn_k:
+    type: "choice"
+    values: [5, 10, 15, 20, 30]

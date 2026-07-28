@@ -1,0 +1,42 @@
+is_multimodal_model: true
+is_federated: false
+is_sequential: false
+
+embedding_size: 64
+
+# Backbone the behavior-driven feature adapter feeds. The official repo
+# (github.com/fqldom/BeFA) demonstrates BeFA on LATTICE (LATTICE_BeFA.py),
+# so that is the default and only supported backbone here.
+backbone: "lattice"
+
+# LATTICE backbone knobs (user-item LightGCN view + per-modality item-item
+# KNN-graph view), mirroring the reference config.
+num_ui_layers: 2
+num_layers: 1
+knn_k: 10
+dropout_rate: 0.1   # model-local default for the searched dropout_rate knob
+
+# BeFA behavior-driven feature adapter knobs. The adapter is a 3-linear MLP
+# per modality with hidden width embedding_size * layer_times that reconstructs
+# the projected content features before the backbone consumes them.
+layer_times: 2
+# adapter_weight gates the reconstruction as a residual: effective feature =
+# projected + adapter_weight * (BeFA(projected) - projected). At 1.0 it matches
+# the reference (feature fully reconstructed); at 0.0 the adapter is disabled.
+adapter_weight: 1.0
+
+# In-model embedding-L2 coefficient (decoupled from optimizer weight_decay).
+reg_weight: 1.0e-4
+
+learning_rate: 1.0e-3
+weight_decay: 0.0
+
+hyper_parameters: ["learning_rate", "reg_weight", "layer_times", "dropout_rate", "adapter_weight", "knn_k", "num_layers"]
+parameter_space:
+  learning_rate: {type: loguniform, low: 1.0e-4, high: 5.0e-3}
+  reg_weight: {type: loguniform, low: 1.0e-5, high: 1.0e-1}
+  layer_times: {type: choice, values: [1, 2, 4, 8]}
+  dropout_rate: {type: choice, values: [0.1, 0.3, 0.5, 0.7]}
+  adapter_weight: {type: uniform, low: 0.0, high: 1.0}
+  knn_k: {type: choice, values: [5, 10, 15, 20]}
+  num_layers: {type: choice, values: [1, 2, 3]}

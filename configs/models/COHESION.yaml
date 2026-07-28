@@ -1,0 +1,81 @@
+# COHESION -- Co-optimized Heterogeneous Fusion for Multimodal Recommendation
+#
+# Faithful baseline of the SIGIR'2025 COHESION model (official code:
+# src/models/cohesion.py). COHESION fuses id + visual/textual signals in two
+# stages: an early-stage per-modality layer-refined GCN over the bipartite
+# user-item graph (with an RMS blend of id and projected feature embeddings),
+# and a late-stage fusion over a cosine-kNN item-item modality graph (mm_adj)
+# plus a per-user top-k user-user shared-item graph. Training scores are
+# re-weighted by an adaptive modality balancer; the objective is a log2-BPR plus
+# a squared-norm regulariser on user preferences and per-user modality weights.
+#
+# The required user-user graph (offline O(n^2) loop upstream) is derived in-model:
+# sparse B@B^T train-only counts (identical to the official loop) with per-user
+# torch.topk selection (official semantics), cached to cohesion_uu_topk{k}.pt.
+# Evaluation recomputes the representation + late fusion (deterministic; no
+# adaptive weight).
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64        # framework embedding key (read by the core base class);
+                          # COHESION's own branch width is dim_latent below
+feat_embed_dim: 64        # (kept for parity with the official config surface)
+dim_latent: 64            # per-modality branch width; representation = 3 * this.
+                          # Official hardcode (src/models/cohesion.py: dim_latent = 64,
+                          # independent of embedding_size). Plain key, NOT searched.
+
+# --- early-stage GCN branches ---
+num_layer: 2              # layer-refined propagation rounds per GCN branch
+
+# --- late-stage fusion ---
+n_mm_layers: 1            # item propagation rounds over the mm_adj item graph
+knn_k: 10                 # per-modality cosine-kNN degree for mm_adj
+mm_image_weight: 0.1      # visual weight in mm_adj = w*image + (1-w)*text
+uu_topk: 40               # per-user user-user neighbours used in late fusion
+uu_graph_top_k: 200       # per-user neighbour-pool size stored in the u-u graph
+                          # dict; mirrors the official preprocessing constant
+                          # (dualgnn-gen-u-u-matrix.py top-200). Plain key, NOT searched.
+
+# --- optimisation ---
+reg_weight: 0.1           # squared-norm reg on user preferences + weight_u
+dropout_rate: 0.0         # bipartite edge dropout (0 = identity)
+learning_rate: 0.001
+
+# HPO space: the official grid searches only {learning_rate, reg_weight,
+# dropout: [0], num_layer} (src/configs/model/COHESION.yaml). We deliberately
+# EXTEND it with knn_k / mm_image_weight / uu_topk and dropout_rate > 0 —
+# the official code ships an edge-dropout branch but never validated
+# dropout > 0 (its grid pins dropout to [0]).
+hyper_parameters: [
+  "learning_rate",
+  "reg_weight",
+  "num_layer",
+  "knn_k",
+  "mm_image_weight",
+  "uu_topk",
+  "dropout_rate",
+]
+parameter_space:
+  learning_rate:
+    type: "choice"
+    values: [0.1, 0.01, 0.001, 0.0001]
+  reg_weight:
+    type: "choice"
+    values: [0.1, 0.01, 0.001, 0.0001]
+  num_layer:
+    type: "choice"
+    values: [1, 2, 3, 4]
+  knn_k:
+    type: "choice"
+    values: [5, 10, 20]
+  mm_image_weight:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  uu_topk:
+    type: "choice"
+    values: [20, 40]
+  dropout_rate:
+    type: "choice"
+    values: [0.0, 0.1, 0.2]

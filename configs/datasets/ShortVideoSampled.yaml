@@ -1,0 +1,138 @@
+interaction_file: "inter.csv"
+field_separator: ","
+USER_ID_FIELD: "userID"
+ITEM_ID_FIELD: "itemID"
+inter_splitting_label: "split_label"
+TIME_FIELD: "timestamp"
+features:
+  vision_feature_file: "image_features.npy"
+  text_feature_file: "text_features.npy"
+  visual_dim: 256
+  text_dim: 384
+
+# Add A-LCDS@K and E-LCDS@K to the same result dictionary/CSV as the ranking
+# metrics. K is taken directly from evaluation.topk.
+lcds:
+  enabled: true
+
+# HPO-tuned defaults for this dataset. These are applied only when the selected
+# model matches the key below, after the model YAML and shared dataset settings.
+model_overrides:
+  # complete=500/500, best_trial=363, best_valid_NDCG@10=0.014059
+  BPR:
+    learning_rate: 0.0017482740262741631
+    embedding_size: 512
+    weight_decay: 7.438346510825807e-06
+  # best_trial=206, best_valid_NDCG@10=0.014743
+  LightGCN:
+    learning_rate: 0.00421690004190974
+    num_layers: 5
+    embedding_weight_decay: 3.018006405328605e-07
+    embedding_size: 256
+  # complete=500/500, best_trial=440, best_valid_NDCG@10=0.009247
+  FlowCF:
+    learning_rate: 0.0018293465025301995
+    n_steps: 15
+    s_steps: 3
+    time_embedding_size: 12
+    dropout_rate: 0.16497892357120675
+    weight_decay: 1.252917051295739e-08
+  # best_trial=405, best_valid_NDCG@10=0.015199
+  DiffMM:
+    learning_rate: 0.007803013129001037
+    loss_weights:
+      ssl_loss: 0.01
+      diffusion_loss: 0.01
+    weight_decay: 4.529072662210229e-08
+    contrastive_learning:
+      temperature: 0.3
+    num_layers: 4
+    dropout_rate: 0.46620780184645755
+  # complete=500/500, best_trial=266, best_valid_NDCG@10=0.010529
+  VBPR:
+    learning_rate: 0.003781135518445539
+    reg_weight: 2.0
+  # complete=500/500, best_trial=210, best_valid_NDCG@10=0.014089
+  BM3:
+    learning_rate: 0.001015716626403197
+    ssl_weight: 0.0001
+    dropout_rate: 0.018893896117776962
+    weight_decay: 6.016456952142947e-06
+    num_layers: 3
+  # complete=500/500, best_trial=488, best_valid_NDCG@10=0.011657
+  NCF: &ncf_tuned_defaults
+    learning_rate: 0.0003385206792049782
+    mlp_hidden_size: 64
+    dropout_rate: 0.43281623557905535
+    embedding_size: 512
+    num_layers: 3
+    embedding_weight_decay: 2.4277844146508308e-05
+  # Deprecated command-name compatibility.
+  NeuMF: *ncf_tuned_defaults
+  # complete=500/500, best_trial=400, best_valid_NDCG@10=0.011365
+  GRCN:
+    learning_rate: 0.00032824821862043394
+    reg_weight: 1.807964234378492e-05
+    num_layers: 2
+    dropout_rate: 0.02182236376146074
+    embedding_size: 256
+  # complete=500/500, best_trial=498, best_valid_NDCG@10=0.017076
+  REARM:
+    learning_rate: 0.0027840884467433
+    weight_decay: 0.000766317033523
+    num_layers: 5
+    n_ii_layers: 2
+    n_uu_layers: 1
+    num_user_co: 20
+    num_item_co: 20
+    user_knn_k: 45
+    item_knn_k: 15
+    uu_co_weight: 0.3241792949769642
+    ii_co_weight: 0.251748257261414
+    u_mm_image_weight: 0.3647774670364893
+    i_mm_image_weight: 0.0459509916087708
+    s_drop: 0.0835640916211619
+    m_drop: 0.9798933516537112
+    rank: 7
+    cl_tmp: 0.1707034584750902
+    cl_loss_weight: 0.0060641250627704
+    diff_loss_weight: 4.754417340536668e-06
+  # complete=500/500, best_trial=433, best_valid_NDCG@10=0.016283
+  FREEDOM:
+    learning_rate: 0.0149531321780931
+    weight_decay: 1.2294560500344686e-07
+    dropout_rate: 0.9
+    knn_k: 10
+  # complete=500/500, best_trial=126, best_valid_NDCG@10=0.018175
+  MGCN:
+    learning_rate: 0.0035616930737146
+    reg_weight: 0.0009774067542071
+    alpha: 0.0251821317258173
+    num_layers: 2
+    knn_k: 15
+  # complete=500/500, best_trial=379, best_valid_NDCG@10=0.015657
+  LGMRec:
+    learning_rate: 0.002561055116828
+    reg_weight: 0.000209707093581
+    cl_weight: 0.0001183372842373
+    alpha: 0.0028989156975268
+    hyper_num: 16
+    keep_rate: 0.7
+    num_ui_layers: 3
+  # complete=500/500, best_trial=494, best_valid_NDCG@10=0.015868
+  LATTICE:
+    learning_rate: 0.0098255387042212
+    reg_weight: 5.075832013598987e-06
+    beta: 0.0268595834249404
+    num_layers: 2
+    knn_k: 30
+  # complete=500/500, best_trial=377, best_valid_NDCG@10=0.017651
+  FITMM:
+    learning_rate: 0.0008254552550573
+    num_freq_bands: 3
+    ib_direction: "Pos"
+    ib_alpha: 0.0195704031606451
+    ib_mu: 0.0108450822742711
+    ib_phi_plus: 0.13692237072106
+    ib_weight: 2.75041937635461
+    cl_weight: 0.0429137833463751

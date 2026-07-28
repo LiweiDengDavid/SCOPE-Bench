@@ -1,0 +1,26 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+backbone: "lightgcn"
+embedding_size: 64
+num_layers: 2
+knn_k: 10
+prune_threshold: 0.0
+align_user_weight: 0.1
+align_item_weight: 0.1
+denoise_temp: 0.2
+pseudo_topk: 10
+reg_weight: 1.0e-4
+
+learning_rate: 1.0e-3
+weight_decay: 0.0
+
+hyper_parameters: ["learning_rate", "reg_weight", "align_user_weight", "align_item_weight", "knn_k", "num_layers"]
+parameter_space:
+  learning_rate: {type: loguniform, low: 1.0e-5, high: 1.0e-2}
+  reg_weight: {type: loguniform, low: 1.0e-6, high: 1.0e-2}
+  align_user_weight: {type: loguniform, low: 1.0e-3, high: 1.0e0}
+  align_item_weight: {type: loguniform, low: 1.0e-3, high: 1.0e0}
+  knn_k: {type: choice, values: [5, 10, 15, 20]}
+  num_layers: {type: choice, values: [1, 2, 3, 4]}

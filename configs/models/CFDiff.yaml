@@ -1,0 +1,57 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: false
+
+d_model: 512 # Internal model dimension (CAM_AE) - must be divisible by num_attention_heads
+num_attention_heads: 8 # Multi-head attention heads
+num_layers: 3 # Number of attention layers
+dropout_rate: 0.5 # Dropout rate
+diffusion_steps: 20 # Number of diffusion timesteps
+noise_schedule: "linear" # Noise schedule: linear (small-noise DiffRec/CF-Diff design), cosine, binomial
+noise_scale: 0.01 # CF-Diff small-noise forward process: betas = noise_scale * linspace(noise_min, noise_max)
+noise_min: 0.001
+noise_max: 0.01
+model_mean_type: "epsilon" # Prediction target: epsilon, start_x
+sampling_noise: false # Deterministic reverse process at inference (RecBole default); true = stochastic DDPM sampling (non-reproducible eval). Mirrors DiffRec.
+max_hops: 3 # Maximum number of hops (1,2,3)
+hop_fusion_weights: [0.5, 0.3, 0.2]  # CAM_AE_multihops 1/2/3-hop aggregation weights (normalized at use)
+cross_fusion_weight: 0.5  # CAM_AE single-hop cross-attention fusion weight
+cache_multihop: true # Keep multi-hop adjacencies resident in memory; false rebuilds them per batch (slower, identical features)
+
+learning_rate: 0.0001 # Learning rate (from original paper)
+weight_decay: 1.0e-4 # Weight decay
+clip_grad_norm: 1.0 # Gradient clipping (flat top-level key so it actually applies)
+
+hyper_parameters:
+  [
+    "d_model",
+    "num_attention_heads",
+    "diffusion_steps",
+    "learning_rate",
+    "weight_decay",
+    "dropout_rate",
+  ]
+parameter_space:
+  d_model:
+    type: "choice"
+    values: [64, 128, 256, 512] # All divisible by 2,4,8,16
+
+  num_attention_heads:
+    type: "choice"
+    values: [1, 2, 4, 8]
+  diffusion_steps:
+    type: "choice"
+    values: [10, 20, 50, 100]
+
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5

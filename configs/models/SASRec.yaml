@@ -1,0 +1,39 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: true
+
+hidden_size: 64
+num_layers: 3
+num_attention_heads: 8
+norm_first: false  # false=post-norm (original), true=pre-norm
+embedding_size: 64  # Same as hidden_size for consistency
+dropout_rate: 0.1
+
+learning_rate: 0.001  # SASRec (Kang & McAuley 2018) / RecBole default for Adam; 0.1 diverges
+weight_decay: 0.0001  # optimizer L2 coefficient
+
+loss_type: "ce"  # full-catalogue softmax cross-entropy (RecBole/paper standard); "bpr" is opt-in
+
+hyper_parameters: ["learning_rate", "dropout_rate", "weight_decay", "num_layers", "num_attention_heads", "hidden_size"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-2
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4]
+  num_attention_heads:
+    type: "choice"
+    values: [1, 2, 4, 8]
+  hidden_size:
+    type: "choice"
+    values: [32, 64, 128, 256]

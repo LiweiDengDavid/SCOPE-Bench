@@ -1,0 +1,27 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+num_ui_layers: 2
+n_mm_layers: 1
+n_hyper_layer: 1
+hyper_num: 4
+keep_rate: 0.5
+alpha: 0.2
+cl_weight: 0.01
+reg_weight: 1.0e-4
+tau: 0.2         # gumbel-softmax + hypergraph-CL temperature
+
+learning_rate: 1.0e-3
+weight_decay: 0.0
+
+hyper_parameters: ["learning_rate", "reg_weight", "cl_weight", "alpha", "hyper_num", "keep_rate", "num_ui_layers"]
+parameter_space:
+  learning_rate: {type: loguniform, low: 1.0e-5, high: 1.0e-2}
+  reg_weight: {type: loguniform, low: 1.0e-6, high: 1.0e-2}
+  cl_weight: {type: loguniform, low: 1.0e-4, high: 1.0e0}
+  alpha: {type: loguniform, low: 1.0e-3, high: 1.0e0}
+  hyper_num: {type: choice, values: [2, 4, 8, 16]}
+  keep_rate: {type: choice, values: [0.3, 0.5, 0.7, 1.0]}
+  num_ui_layers: {type: choice, values: [1, 2, 3, 4]}

@@ -1,0 +1,99 @@
+# FITMM -- Frequency-aware Information-bottleneck MultiModal recommendation (ACM MM'25)
+#
+# Faithful baseline of the paper's FITMM model (official repo model class FITMM,
+# src/models/fitmm.py). Three light bipartite GCN branches (id / visual / textual;
+# two-Linear projection with leaky_relu in between, L2-normalised ego rows)
+# produce a concatenated 192-d representation; the item view is enhanced over an
+# item-item multimodal kNN graph (mm_adj, ONES-valued normalized Laplacian), the
+# user view by the concatenated raw preference tables. Base + enhanced views are
+# decomposed into num_freq_bands spectral bands via a per-modality-chunk
+# torch.linalg.svd (SVD of the embedding matrix, not a graph eigendecomposition)
+# and added per band. SEPARATE user/item TaskAwareFrequencyFusion modules gate
+# the bands with per-node per-BAND scalars read from the ORIGINAL pre-fusion
+# representation: band_gates = 1 + gate_scale * freq_gate(task_emb), where
+# freq_gate = Linear(3d -> M) + Sigmoid ("Pos") / Tanh ("Dual"); gate_scale
+# (init 0.5) and the per-band freq_weights (init ones) are LEARNABLE parameters
+# whose inits are architecture constants of the official code, not config knobs.
+# The main objective is BINARY CROSS-ENTROPY with logits (faithful; NOT BPR),
+# accompanied by a deterministic information-bottleneck surrogate on the (N, M)
+# gate delta computed over ALL nodes in the forward pass (ib_loss) and a JOINT
+# user+item frequency contrastive loss over the per-band batch slices (cl_loss:
+# raw-dot InfoNCE over the full log_softmax matrix, single /(M*(M-1))).
+#
+# The per-chunk SVD is guarded by the BGCC torch._C._LinAlgError -> CPU-LAPACK
+# retry (clustered / repeated singular values are a real train-time NaN risk).
+# mm_adj is built once and cached to the dataset directory, keyed by BOTH knn_k
+# and mm_image_weight so a YAML change can never silently reuse a stale blend.
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+# --- dimensions ---
+embedding_size: 64          # per-modality latent width (dim_latent); fused rep = 3*64 = 192
+feat_embed_dim: 64          # hidden width of the modality feature projection (dv/dt -> 4*d -> d)
+num_layers: 2               # bipartite GCN propagation depth per branch (layer-sum + input)
+n_mm_layers: 1              # item-item mm_adj propagation depth for the graph-enhanced view
+knn_k: 10                   # per-modality cosine-kNN neighbours for mm_adj
+mm_image_weight: 0.1        # image/text blend weight for mm_adj
+aggr_mode: "add"            # bipartite aggregation mode (symmetric-normalised sum)
+
+# --- spectral band decomposition + residual gate ---
+num_freq_bands: 3           # SVD singular-triplet band count (per 64-d modality chunk)
+ib_direction: "Pos"         # freq_gate activation: Pos -> Sigmoid, Dual -> Tanh (band_gates =
+                            # 1 + gate_scale * freq_gate(task_emb); gate_scale & freq_weights
+                            # are LEARNABLE params, official inits 0.5 / ones -- not knobs)
+cl_temperature: 1.0         # temperature (tau) of the frequency contrastive InfoNCE term
+
+# --- information-bottleneck gate-delta surrogate (deterministic) ---
+ib_alpha: 1.0               # weight of the mean ||delta||^2 term (delta = gate - 1)
+ib_mu: 1.0                  # weight of the ||delta|| * sum relu(delta - phi_plus) term
+ib_phi_plus: 0.0            # slack threshold in the IB excess term
+ib_weight: 1.0              # overall weight of the IB surrogate loss
+
+# --- frequency contrastive loss weight (reference `reg_weight` misnomer) ---
+cl_weight: 0.001            # overall weight of the frequency contrastive loss
+
+learning_rate: 0.0001
+weight_decay: 0.0
+
+hyper_parameters: [
+  "learning_rate",
+  "num_freq_bands",
+  "ib_direction",
+  "ib_alpha",
+  "ib_mu",
+  "ib_phi_plus",
+  "ib_weight",
+  "cl_weight",
+]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-2
+  num_freq_bands:
+    type: "choice"
+    values: [2, 3, 4]
+  ib_direction:
+    type: "choice"
+    values: ["Pos", "Dual"]
+  ib_alpha:
+    type: "loguniform"
+    low: 1.0e-2
+    high: 1.0e+1
+  ib_mu:
+    type: "loguniform"
+    low: 1.0e-2
+    high: 1.0e+1
+  ib_phi_plus:
+    type: "uniform"
+    low: 0.0
+    high: 1.0
+  ib_weight:
+    type: "loguniform"
+    low: 1.0e-3
+    high: 1.0e+1
+  cl_weight:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1

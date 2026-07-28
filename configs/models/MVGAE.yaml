@@ -1,0 +1,30 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+num_layers: 3
+latent_dim: 128
+beta: 0.1
+
+learning_rate: 0.1
+weight_decay: 0.1
+
+hyper_parameters: ["learning_rate", "beta", "weight_decay", "num_layers"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  beta:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  num_layers:
+    type: choice
+    values: [1, 2, 3, 4, 5]
+

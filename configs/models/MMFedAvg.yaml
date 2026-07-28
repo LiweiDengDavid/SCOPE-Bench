@@ -1,0 +1,24 @@
+is_federated: true
+is_multimodal_model: true
+is_sequential: false
+learning_rate_scheduler: null
+
+embedding_size: 512
+feature_embedding_size: 64
+fusion_method: 'moe' # 'moe', 'sum', 'attention', 'mlp', 'gate'
+
+optimizer: 'sgd'
+learning_rate: 0.01
+weight_decay: 0.00001
+clip_grad_norm: 1.0
+
+hyper_parameters: ["learning_rate", "weight_decay"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3

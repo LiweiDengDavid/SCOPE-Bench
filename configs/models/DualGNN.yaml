@@ -1,0 +1,25 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+num_layers: 2  # DualGNN's GCN stack uses 2 convolutions in this implementation
+aggr_mode: 'add'
+knn_k: 40
+user_graph_dict_file: "user_graph_dict.npy"
+latent_dim: 64
+learning_rate: 0.1
+weight_decay: 0.0  # optimizer L2 off; in-model L2 applied once via reg_weight
+reg_weight: 0.00001  # in-model embedding-L2 coefficient
+# num_layers is intentionally excluded because this implementation exposes a
+# two-convolution DualGNN stack.
+hyper_parameters: ["learning_rate", "reg_weight"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  reg_weight:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3

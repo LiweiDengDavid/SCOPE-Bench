@@ -1,0 +1,28 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: false
+
+embedding_size: 64 # Embedding dimension
+num_layers: 3 # Number of graph convolution layers — RecBole default
+require_pow: false # Regularization computation mode — RecBole setting
+
+learning_rate: '1e-3'
+weight_decay: 0.0  # optimizer L2 — kept off; embedding L2 is applied in-model
+embedding_weight_decay: '1e-4'  # in-model EmbLoss coefficient (RecBole-faithful)
+
+hyper_parameters: ["num_layers", "embedding_weight_decay", "embedding_size", "learning_rate"]
+parameter_space:
+  num_layers:
+    type: "choice"
+    values: [2, 3, 4, 5] # Commonly used graph convolution layer counts
+  embedding_weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  embedding_size:
+    type: "choice"
+    values: [32, 64, 128, 256, 512]

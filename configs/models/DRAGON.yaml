@@ -1,0 +1,30 @@
+is_federated: false
+is_multimodal_model: true
+is_sequential: false
+
+embedding_size: 64
+feature_embedding_size: 64
+
+num_mm_layers: 3
+knn_k: 10
+user_graph_k: 40
+user_graph_dict_file: "user_graph_dict.npy"
+mm_image_weight: 0.1
+aggr_mode: add
+latent_dim: 64
+learning_rate: 0.01
+weight_decay: 0.0  # optimizer L2 off; in-model L2 applied once via reg_weight
+reg_weight: 0.00001  # in-model embedding-L2 coefficient
+hyper_parameters: ["learning_rate", "reg_weight", "knn_k"]
+parameter_space:
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  reg_weight:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
+  knn_k:
+    type: "choice"
+    values: [5, 10, 15, 20, 30]

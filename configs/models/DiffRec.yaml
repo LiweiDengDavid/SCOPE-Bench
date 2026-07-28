@@ -1,0 +1,51 @@
+is_federated: false
+is_multimodal_model: false
+is_sequential: false
+
+num_layers: 1 # Default number of hidden layers in HPO mode
+hidden_dim: 1000 # Default first-layer dimension in HPO mode
+min_hidden_dim: 64 # Floor for halved hidden-layer dimensions in HPO mode
+steps: 100 # RecBole default number of diffusion steps
+noise_scale: '1e-4' # RecBole default noise scaling factor
+noise_min: 1e-5 # RecBole default minimum noise variance
+noise_max: 5e-3 # RecBole default maximum noise variance
+sampling_steps: 0 # Inference steps (0 means use all steps)
+sampling_noise: false # Deterministic reverse sampling (RecBole default): reproducible eval. true injects Gaussian noise per reverse step.
+mean_type: "x0" # Prediction type: 'x0' predicts original data, 'eps' predicts noise
+activation: tanh # MLP activation function
+dropout_rate: 1e-1 # MLP dropout probability
+
+learning_rate: '1e-3' # RecBole default learning rate
+weight_decay: 1e-4 # Lightweight weight decay
+
+hyper_parameters: ["steps", "noise_scale", "learning_rate", "sampling_steps", "num_layers", "hidden_dim", "dropout_rate", "weight_decay"]
+parameter_space:
+  # MLP architecture config — separate control of layer count and dimension
+  num_layers:
+    type: "choice"
+    values: [1, 2, 3] # Number of hidden layers
+  hidden_dim:
+    type: "choice"
+    values: [256, 512, 1024] # First hidden layer dimension; subsequent layers halve in size
+  steps:
+    type: "choice"
+    values: [50, 100, 200, 500] # Diffusion step count choices
+  noise_scale:
+    type: "logscale"
+    low: 1e-5
+    high: 1e-3 # Noise scaling factor range
+  learning_rate:
+    type: "loguniform"
+    low: 1.0e-5
+    high: 1.0e-1
+  sampling_steps:
+    type: "choice"
+    values: [0, 10, 25, 50] # Inference step count choices (0 means full steps)
+  dropout_rate:
+    type: "uniform"
+    low: 0.0
+    high: 0.5
+  weight_decay:
+    type: "loguniform"
+    low: 1.0e-8
+    high: 1.0e-3
