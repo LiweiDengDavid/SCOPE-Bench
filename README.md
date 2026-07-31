@@ -45,6 +45,11 @@ The downloadable training bundles apply click-positive filtering and retain user
 
 The paper reports benchmark results for 14 representative baselines: **BPR, LightGCN, NCF, FlowCF, VBPR, BM3, DiffMM, GRCN, REARM, FREEDOM, MGCN, LGMRec, LATTICE,** and **FITMM**. Beyond this paper-facing suite, the repository provides **54 model implementations** spanning centralized ID-only, centralized multimodal, federated ID-only, federated multimodal, and sequential recommendation. See [docs/models.md](docs/models.md) for the complete list and model references.
 
+`configs/datasets/ShortVideoFull.yaml` provides the HPO-tuned defaults for all
+14 paper-facing baselines. These model-specific settings are applied
+automatically when a baseline is run on `ShortVideoFull`; explicit command-line
+or configuration overrides still take precedence.
+
 ## 📂 Project Structure
 
 ```text

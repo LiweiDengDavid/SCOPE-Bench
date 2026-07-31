@@ -18,61 +18,121 @@ lcds:
 # HPO-tuned defaults for this dataset. These are applied only when the selected
 # model matches the key below, after the model YAML and shared dataset settings.
 model_overrides:
-  # complete=500/500, best_trial=363, best_valid_NDCG@10=0.014059
+  # complete=300/300, best_valid_NDCG@10=0.013236
   BPR:
-    learning_rate: 0.0017482740262741631
-    embedding_size: 512
-    weight_decay: 7.438346510825807e-06
-  # complete=500/500, best_trial=206, best_valid_NDCG@10=0.014743
-  LightGCN:
-    learning_rate: 0.00421690004190974
-    num_layers: 5
-    embedding_weight_decay: 3.018006405328605e-07
+    learning_rate: 0.0023893983882356737
     embedding_size: 256
-  # complete=500/500, best_trial=440, best_valid_NDCG@10=0.009247
+    weight_decay: 8.452151079249406e-07
+  # complete=300/300, best_valid_NDCG@10=0.012806
+  LightGCN:
+    learning_rate: 0.0008232821058549032
+    num_layers: 4
+    embedding_weight_decay: 4.8018389470354025e-05
+    embedding_size: 512
+  # complete=300/300, best_valid_NDCG@10=0.010733
   FlowCF:
-    learning_rate: 0.0018293465025301995
-    n_steps: 15
-    s_steps: 3
-    time_embedding_size: 12
-    dropout_rate: 0.16497892357120675
-    weight_decay: 1.252917051295739e-08
-  # best_trial=405, best_valid_NDCG@10=0.015199
+    learning_rate: 9.282170237879716e-05
+    n_steps: 5
+    s_steps: 4
+    time_embedding_size: 16
+    dropout_rate: 0.16332198458787903
+    weight_decay: 1.654079988668982e-08
+  # complete=105/300, best-so-far valid_NDCG@10=0.014603
   DiffMM:
-    learning_rate: 0.007803013129001037
+    learning_rate: 0.002953737010945674
     loss_weights:
       ssl_loss: 0.01
-      diffusion_loss: 0.01
-    weight_decay: 4.529072662210229e-08
+      diffusion_loss: 0.001
+    weight_decay: 3.471059403546363e-08
     contrastive_learning:
-      temperature: 0.3
-    num_layers: 4
-    dropout_rate: 0.46620780184645755
-  # complete=500/500, best_trial=266, best_valid_NDCG@10=0.010529
+      temperature: 0.5
+    num_layers: 2
+    dropout_rate: 0.05479618380757821
+  # complete=300/300, best_valid_NDCG@10=0.011325
   VBPR:
-    learning_rate: 0.003781135518445539
-    reg_weight: 2.0
-  # complete=500/500, best_trial=210, best_valid_NDCG@10=0.014089
+    learning_rate: 0.001304120331718442
+    reg_weight: 0.1
+  # complete=300/300, best_valid_NDCG@10=0.013830
   BM3:
-    learning_rate: 0.001015716626403197
-    ssl_weight: 0.0001
-    dropout_rate: 0.018893896117776962
-    weight_decay: 6.016456952142947e-06
+    learning_rate: 0.007313275578818955
+    ssl_weight: 0.01
+    dropout_rate: 0.2665532225253352
+    weight_decay: 2.1992293241474836e-08
     num_layers: 3
-  # complete=500/500, best_trial=488, best_valid_NDCG@10=0.011657
+  # complete=300/300, best_valid_NDCG@10=0.011575
   NCF: &ncf_tuned_defaults
-    learning_rate: 0.0003385206792049782
-    mlp_hidden_size: 64
-    dropout_rate: 0.43281623557905535
+    learning_rate: 0.0006238205797924451
+    mlp_hidden_size: 128
+    dropout_rate: 0.26684993097699294
     embedding_size: 512
     num_layers: 3
-    embedding_weight_decay: 2.4277844146508308e-05
+    embedding_weight_decay: 3.6841504850822146e-05
   # Deprecated command-name compatibility.
   NeuMF: *ncf_tuned_defaults
-  # complete=500/500, best_trial=400, best_valid_NDCG@10=0.011365
+  # complete=300/300, best_valid_NDCG@10=0.008679
   GRCN:
-    learning_rate: 0.00032824821862043394
-    reg_weight: 1.807964234378492e-05
-    num_layers: 2
-    dropout_rate: 0.02182236376146074
+    learning_rate: 0.00015120527462379602
+    reg_weight: 1.2313585583259722e-06
+    num_layers: 3
+    dropout_rate: 0.0018497599245630922
     embedding_size: 256
+  # complete=300/300, best_valid_NDCG@10=0.016529
+  REARM:
+    learning_rate: 0.0002696428567500291
+    weight_decay: 1.565455813700699e-05
+    num_layers: 4
+    n_ii_layers: 2
+    n_uu_layers: 1
+    num_user_co: 10
+    num_item_co: 5
+    user_knn_k: 40
+    item_knn_k: 5
+    uu_co_weight: 0.08260702348586806
+    ii_co_weight: 0.17305073480331573
+    u_mm_image_weight: 0.1907410038114609
+    i_mm_image_weight: 0.31698724004537093
+    s_drop: 0.44981068682721476
+    m_drop: 0.6271071357652974
+    rank: 5
+    cl_tmp: 0.6674088702790467
+    cl_loss_weight: 7.21937896089783e-05
+    diff_loss_weight: 0.00015602697572661393
+  # complete=300/300, best_valid_NDCG@10=0.015687
+  FREEDOM:
+    learning_rate: 0.002154685072151864
+    weight_decay: 1.3925492993065292e-08
+    dropout_rate: 0.8
+    knn_k: 30
+  # complete=300/300, best_valid_NDCG@10=0.015398
+  MGCN:
+    learning_rate: 0.0013470902848383628
+    reg_weight: 2.103642123807002e-05
+    alpha: 0.09792905172535023
+    num_layers: 4
+    knn_k: 10
+  # complete=300/300, best_valid_NDCG@10=0.015864
+  LGMRec:
+    learning_rate: 0.0027415127371749016
+    reg_weight: 0.007466320510822822
+    cl_weight: 0.0004673266783429983
+    alpha: 0.04565645375244605
+    hyper_num: 8
+    keep_rate: 0.7
+    num_ui_layers: 4
+  # complete=300/300, best_valid_NDCG@10=0.014359
+  LATTICE:
+    learning_rate: 0.0032920453236473324
+    reg_weight: 4.1241366453624086e-07
+    beta: 0.059196599460623736
+    num_layers: 2
+    knn_k: 30
+  # complete=300/300, best_valid_NDCG@10=0.015195
+  FITMM:
+    learning_rate: 0.00023513253636558848
+    num_freq_bands: 4
+    ib_direction: "Pos"
+    ib_alpha: 0.2402247900629794
+    ib_mu: 0.1582061808640807
+    ib_phi_plus: 0.23000881353803068
+    ib_weight: 2.1581617278217293
+    cl_weight: 0.00011070701617895632
