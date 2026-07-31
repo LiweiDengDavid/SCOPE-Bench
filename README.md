@@ -1,10 +1,10 @@
-# SCOPE-Bench: Content Depth Matters in Short Videos
+# Content Depth Matters in Short-Video Recommendation: Rethinking the Attention Economy
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/get-started/locally/)
 
-Official PyTorch implementation for **Content Depth Matters in Short Videos: Rethinking the Attention Economy**.
+Official PyTorch implementation of **Content Depth Matters in Short-Video Recommendation: Rethinking the Attention Economy** (**SCOPE-Bench**).
 
 ## 🎯 Overview
 

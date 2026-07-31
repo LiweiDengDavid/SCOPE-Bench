@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "scope-bench"
 version = "0.1.0"
-description = "A short-video cognitive depth evaluation benchmark"
+description = "Content Depth Matters in Short-Video Recommendation: Rethinking the Attention Economy"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
