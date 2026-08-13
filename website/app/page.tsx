@@ -138,7 +138,7 @@ export default function Home() {
         <div className="container">
           <div className="question-heading">
             <span>①</span>
-            <div><h2>What depth does a video contain?</h2><p>Item-level evaluation separates surface-level presentation from content that develops information, context and reasoning.</p></div>
+            <div><h2>Overview of the scalable CDS annotation workflow.</h2><p>At the item level, SCOPE-Bench assesses the content depth of individual short videos from the user perspective.</p></div>
           </div>
           <figure className="paper-figure">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -152,7 +152,7 @@ export default function Home() {
         <div className="container">
           <div className="question-heading">
             <span>②</span>
-            <div><h2>What depth does a recommender deliver?</h2><p>List-level evaluation measures the depth profile of a complete top-k recommendation list without discarding conventional ranking quality.</p></div>
+            <div><h2>Overview of the content-depth-aware RS evaluation framework</h2><p>At the recommendation-list level, it evaluates the content depth of recommendation lists from the platform perspective</p></div>
           </div>
           <figure className="paper-figure">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -165,7 +165,7 @@ export default function Home() {
       <section className="section mechanism-section">
         <div className="container">
           <div className="center-heading">
-            <h2 className="section-title">One benchmark, five settings</h2>
+            <h2 className="section-title">One benchmark, four settings</h2>
             <p>The repository brings distinct recommendation families into a shared training and evaluation contract.</p>
           </div>
           <div className="mechanism-grid">
