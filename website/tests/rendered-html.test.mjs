@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const siteRoot = new URL("../", import.meta.url);
@@ -26,9 +26,15 @@ test("exports the SCOPE-Bench project page", async () => {
 
 test("includes required public assets", async () => {
   await Promise.all([
+    access(new URL("dist/client/.nojekyll", siteRoot)),
     access(new URL("public/favicon.svg", siteRoot)),
     access(new URL("public/figures/overview-b.png", siteRoot)),
     access(new URL("public/og.png", siteRoot)),
     access(new URL("public/branding/uts-logo-wide.png", siteRoot)),
   ]);
+
+  const publishedCss = await readdir(
+    new URL("dist/client/_next/static/css/", siteRoot),
+  );
+  assert.ok(publishedCss.some((file) => file.endsWith(".css")));
 });
