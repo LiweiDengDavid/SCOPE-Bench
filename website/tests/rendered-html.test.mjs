@@ -14,9 +14,14 @@ test("exports the SCOPE-Bench project page", async () => {
   assert.match(html, /individual short videos from the user perspective/);
   assert.match(html, /Overview of the content-depth-aware RS evaluation framework/);
   assert.match(html, /recommendation lists from the platform perspective/);
-  assert.match(html, /One benchmark, four settings/);
+  assert.match(html, /One benchmark, five settings/);
+  assert.match(html, /Centralized ID/);
+  assert.match(html, /Centralized Multimodal/);
+  assert.match(html, /Federated ID/);
+  assert.match(html, /Federated Multimodal/);
+  assert.match(html, /Sequential/);
   assert.doesNotMatch(html, /What depth does a video contain|What depth does a recommender deliver/);
-  assert.doesNotMatch(html, /One benchmark, five settings/);
+  assert.doesNotMatch(html, /One benchmark, four settings/);
   assert.match(html, /More work is on the way/);
   assert.match(html, /Liwei Deng/);
   assert.match(html, /https:\/\/liweidengdavid\.github\.io\//);

@@ -165,14 +165,15 @@ export default function Home() {
       <section className="section mechanism-section">
         <div className="container">
           <div className="center-heading">
-            <h2 className="section-title">One benchmark, four settings</h2>
-            <p>The repository brings distinct recommendation families into a shared training and evaluation contract.</p>
+            <h2 className="section-title">One benchmark, five settings</h2>
+            <p>The repository separates centralized and federated learning by input modality, alongside sequential recommendation, under one evaluation contract.</p>
           </div>
           <div className="mechanism-grid">
-            <article className="mechanism amber"><span>01</span><h3>Centralized ID</h3><p>Classical, graph-based, diffusion and variational recommendation models.</p></article>
-            <article className="mechanism violet"><span>02</span><h3>Multimodal</h3><p>Factorization, contrastive and graph approaches built around content features.</p></article>
-            <article className="mechanism teal"><span>03</span><h3>Federated</h3><p>ID-only and multimodal methods for distributed recommendation research.</p></article>
-            <article className="mechanism rust"><span>04</span><h3>Sequential</h3><p>Sequence-aware baselines connected to the same evaluation interface.</p></article>
+            <article className="mechanism amber"><span>01</span><h3>Centralized ID</h3><p>ID-based recommendation methods trained from centralized user–item interactions.</p></article>
+            <article className="mechanism violet"><span>02</span><h3>Centralized Multimodal</h3><p>Methods trained centrally with user–item interactions and multimodal content features.</p></article>
+            <article className="mechanism teal"><span>03</span><h3>Federated ID</h3><p>ID-based recommendation methods optimized across distributed clients.</p></article>
+            <article className="mechanism rust"><span>04</span><h3>Federated Multimodal</h3><p>Federated methods combining distributed interactions with multimodal content features.</p></article>
+            <article className="mechanism slate"><span>05</span><h3>Sequential</h3><p>Sequence-aware recommendation methods that model ordered user interaction histories.</p></article>
           </div>
         </div>
       </section>
