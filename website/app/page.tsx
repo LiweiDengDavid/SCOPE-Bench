@@ -218,6 +218,7 @@ export default function Home() {
 
       <section className="section cite-section bg-soft" id="cite">
         <div className="container">
+          <h2 className="section-title">Cite this work</h2>
           <pre className="citation-code"><code>{BIBTEX}</code></pre>
         </div>
       </section>
