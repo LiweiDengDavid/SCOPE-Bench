@@ -29,11 +29,10 @@ test("exports the SCOPE-Bench project page", async () => {
   assert.match(html, /~Yang_Wang134/);
   assert.match(html, /Australian Artificial Intelligence Institute/);
   assert.match(html, /13 representative RSs/);
-  assert.match(html, /Cite this work/);
   assert.match(html, /deng2026contentdepthmattersshortvideo/);
   assert.match(html, /https:\/\/arxiv\.org\/abs\/2608\.13990/);
   assert.match(html, /https:\/\/arxiv\.org\/pdf\/2608\.13990/);
-  assert.doesNotMatch(html, /Coming soon|Paper soon|14 representative paper-facing baselines/);
+  assert.doesNotMatch(html, /Cite this work|If SCOPE-Bench supports your research|citation-actions|Coming soon|Paper soon|14 representative paper-facing baselines/);
   assert.match(html, /v1\.0/);
   assert.doesNotMatch(html, /2\.0|3\.0|Coming next|On the roadmap/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);
