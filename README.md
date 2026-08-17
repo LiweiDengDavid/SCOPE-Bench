@@ -3,8 +3,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/get-started/locally/)
+[![arXiv](https://img.shields.io/badge/arXiv-2608.13990-b31b1b.svg)](https://arxiv.org/abs/2608.13990)
 
 Official PyTorch implementation of **Content Depth Matters in Short-Video Recommendation: Rethinking the Attention Economy** (**SCOPE-Bench**).
+
+📄 [Paper](https://arxiv.org/pdf/2608.13990) · [arXiv](https://arxiv.org/abs/2608.13990) · [Project page](https://liweidengdavid.github.io/SCOPE-Bench/)
 
 ## 🎯 Overview
 
@@ -43,10 +46,10 @@ SCOPE-Bench extends the open-source ShortVideo dataset with CDS annotations for 
 
 The downloadable training bundles apply click-positive filtering and retain users with at least four positive interactions; their post-filter statistics and split details are documented in [datasets/README.md](datasets/README.md).
 
-The paper reports benchmark results for 14 representative baselines: **BPR, LightGCN, NCF, FlowCF, VBPR, BM3, DiffMM, GRCN, REARM, FREEDOM, MGCN, LGMRec, LATTICE,** and **FITMM**. Beyond this paper-facing suite, the repository provides **54 model implementations** spanning centralized ID-only, centralized multimodal, federated ID-only, federated multimodal, and sequential recommendation. See [docs/models.md](docs/models.md) for the complete list and model references.
+The paper reports benchmark results for 13 representative baselines: **BPR, LightGCN, NCF, VBPR, BM3, DiffMM, GRCN, REARM, FREEDOM, MGCN, LGMRec, LATTICE,** and **FITMM**. Beyond this paper-facing suite, the repository provides **54 model implementations** spanning centralized ID-only, centralized multimodal, federated ID-only, federated multimodal, and sequential recommendation. See [docs/models.md](docs/models.md) for the complete list and model references.
 
 `configs/datasets/ShortVideoFull.yaml` provides the HPO-tuned defaults for all
-14 paper-facing baselines. These model-specific settings are applied
+13 paper-facing baselines. These model-specific settings are applied
 automatically when a baseline is run on `ShortVideoFull`; explicit command-line
 or configuration overrides still take precedence.
 
@@ -151,7 +154,19 @@ SCOPE-Bench is built upon the original [ShortVideo dataset](https://github.com/t
 
 If you find SCOPE-Bench useful, please consider citing our work and giving this repository a star ⭐.
 
-The official BibTeX entry is **coming soon**.
+```bibtex
+@misc{deng2026contentdepthmattersshortvideo,
+      title={Content Depth Matters in Short-Video Recommendation: Rethinking the Attention Economy},
+      author={Liwei Deng and Jing Jiang and Zhiwei Li and Yang Wang and Guodong Long},
+      year={2026},
+      eprint={2608.13990},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2608.13990},
+}
+```
+
+The same entry is available in [`CITATION.bib`](CITATION.bib).
 
 
 

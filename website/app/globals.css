@@ -141,9 +141,10 @@ nav { display: flex; align-items: center; gap: 28px; }
 .future-callout p { margin: 3px 0 0; color: var(--ink-soft); font-size: 13px; }
 
 .cite-section { text-align: center; }
-.citation-coming { display: flex; align-items: center; justify-content: center; gap: 14px; max-width: 620px; margin: 0 auto; padding: 24px; border: 1px dashed #d7b9aa; border-radius: 12px; color: var(--ink-soft); background: var(--bg); }
-.citation-coming span { color: var(--accent); font-size: 26px; }
-.citation-coming p { margin: 0; font-size: 14px; }
+.citation-panel { max-width: 880px; margin: 0 auto; padding: 28px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); box-shadow: 0 6px 20px rgb(15 20 25 / .05); }
+.citation-panel > p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+.citation-actions { display: flex; justify-content: center; gap: 8px; margin: 18px 0; }
+.citation-code { margin: 0; padding: 22px; overflow-x: auto; border-radius: 10px; color: #e9e6dc; background: var(--ink); font-family: var(--mono); font-size: 11px; line-height: 1.7; text-align: left; }
 
 footer { padding: 28px 0; border-top: 1px solid var(--line); background: var(--bg); }
 .footer-inner { display: flex; justify-content: space-between; gap: 24px; color: var(--muted); font-size: 12px; }
@@ -187,6 +188,8 @@ footer { padding: 28px 0; border-top: 1px solid var(--line); background: var(--b
   .future-callout { grid-template-columns: 42px 1fr; }
   .future-callout > span { width: 40px; height: 40px; }
   .future-callout .btn { grid-column: 1 / -1; }
+  .citation-panel { padding: 20px; }
+  .citation-code { padding: 16px; font-size: 9px; }
   .uts-logo-wrap img { width: 190px; }
   .footer-inner { flex-direction: column; }
 }
