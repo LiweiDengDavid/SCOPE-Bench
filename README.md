@@ -166,10 +166,6 @@ If you find SCOPE-Bench useful, please consider citing our work and giving this 
 }
 ```
 
-The same entry is available in [`CITATION.bib`](CITATION.bib).
-
-
-
 ## 📄 License
 
 The code is released under the [MIT License](LICENSE). Dataset and model artifacts remain subject to their original licenses and terms.

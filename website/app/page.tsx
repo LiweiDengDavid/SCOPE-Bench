@@ -218,15 +218,7 @@ export default function Home() {
 
       <section className="section cite-section bg-soft" id="cite">
         <div className="container">
-          <h2 className="section-title">Cite this work</h2>
-          <div className="citation-panel">
-            <p>If SCOPE-Bench supports your research, please cite our arXiv preprint.</p>
-            <div className="citation-actions">
-              <a className="btn" href={PAPER_ABSTRACT} target="_blank" rel="noreferrer">arXiv</a>
-              <a className="btn" href={PAPER_PDF} target="_blank" rel="noreferrer">PDF</a>
-            </div>
-            <pre className="citation-code"><code>{BIBTEX}</code></pre>
-          </div>
+          <pre className="citation-code"><code>{BIBTEX}</code></pre>
         </div>
       </section>
 
