@@ -54,6 +54,20 @@ export const metadata: Metadata = {
       "A living benchmark for content-depth-aware short-video recommendation.",
     images: ["og.png"],
   },
+  other: {
+    citation_title:
+      "Content Depth Matters in Short-Video Recommendation: Rethinking the Attention Economy",
+    citation_author: [
+      "Liwei Deng",
+      "Jing Jiang",
+      "Zhiwei Li",
+      "Yang Wang",
+      "Guodong Long",
+    ],
+    citation_publication_date: "2026/08/14",
+    citation_arxiv_id: "2608.13990",
+    citation_pdf_url: "https://arxiv.org/pdf/2608.13990",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

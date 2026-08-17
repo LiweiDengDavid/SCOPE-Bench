@@ -3,6 +3,17 @@
 import { useState } from "react";
 
 const REPOSITORY = "https://github.com/LiweiDengDavid/SCOPE-Bench";
+const PAPER_ABSTRACT = "https://arxiv.org/abs/2608.13990";
+const PAPER_PDF = "https://arxiv.org/pdf/2608.13990";
+const BIBTEX = `@misc{deng2026contentdepthmattersshortvideo,
+      title={Content Depth Matters in Short-Video Recommendation: Rethinking the Attention Economy},
+      author={Liwei Deng and Jing Jiang and Zhiwei Li and Yang Wang and Guodong Long},
+      year={2026},
+      eprint={2608.13990},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2608.13990},
+}`;
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -31,12 +42,13 @@ export default function Home() {
             <div className="top-nav">
               <a href="#use" onClick={() => setMenuOpen(false)}>Use</a>
               <a href="#benchmark" onClick={() => setMenuOpen(false)}>Benchmark</a>
+              <a href="#cite" onClick={() => setMenuOpen(false)}>Cite</a>
               <a href={`${REPOSITORY}/tree/main/docs`} target="_blank" rel="noreferrer">Docs</a>
             </div>
             <div className="resource-buttons">
               <a className="btn" href={REPOSITORY} target="_blank" rel="noreferrer">⌘ Code</a>
               <a className="btn" href={`${REPOSITORY}/tree/main/datasets`} target="_blank" rel="noreferrer">▦ Data</a>
-              <a className="btn" href="#cite">Paper</a>
+              <a className="btn" href={PAPER_PDF} target="_blank" rel="noreferrer">Paper</a>
             </div>
           </nav>
         </div>
@@ -78,7 +90,7 @@ export default function Home() {
             <a className="btn hero-btn" href={REPOSITORY} target="_blank" rel="noreferrer">⌘ Code</a>
             <a className="btn hero-btn" href={`${REPOSITORY}/tree/main/datasets`} target="_blank" rel="noreferrer">▦ Dataset</a>
             <a className="btn hero-btn" href="#use">▶ Get started</a>
-            <span className="btn hero-btn btn-disabled">Paper soon</span>
+            <a className="btn hero-btn" href={PAPER_PDF} target="_blank" rel="noreferrer">▤ Paper</a>
           </div>
         </div>
       </section>
@@ -206,10 +218,14 @@ export default function Home() {
 
       <section className="section cite-section bg-soft" id="cite">
         <div className="container">
-          <h2 className="section-title">Coming soon</h2>
-          <div className="citation-coming">
-            <span aria-hidden="true">⌛</span>
-            <p>The paper and official citation details will be released here.</p>
+          <h2 className="section-title">Cite this work</h2>
+          <div className="citation-panel">
+            <p>If SCOPE-Bench supports your research, please cite our arXiv preprint.</p>
+            <div className="citation-actions">
+              <a className="btn" href={PAPER_ABSTRACT} target="_blank" rel="noreferrer">arXiv</a>
+              <a className="btn" href={PAPER_PDF} target="_blank" rel="noreferrer">PDF</a>
+            </div>
+            <pre className="citation-code"><code>{BIBTEX}</code></pre>
           </div>
         </div>
       </section>
@@ -217,7 +233,7 @@ export default function Home() {
       <footer>
         <div className="container footer-inner">
           <span><strong>SCOPE-Bench</strong> · Content depth matters.</span>
-          <span>v1.0 · <a href={REPOSITORY}>Code</a> · <a href={`${REPOSITORY}/tree/main/docs`}>Docs</a> · <a href={`${REPOSITORY}/blob/main/CONTRIBUTING.md`}>Contribute</a></span>
+          <span>v1.0 · <a href={PAPER_ABSTRACT}>Paper</a> · <a href={REPOSITORY}>Code</a> · <a href={`${REPOSITORY}/tree/main/docs`}>Docs</a> · <a href={`${REPOSITORY}/blob/main/CONTRIBUTING.md`}>Contribute</a></span>
         </div>
       </footer>
     </main>
