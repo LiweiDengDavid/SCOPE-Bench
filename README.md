@@ -26,7 +26,7 @@ CDS captures informational and reasoning depth; it does not assess factual corre
 <p align="center">
   <img src="assets/Overview_b.png" alt="Workflow of cognitive-aware recommender-system evaluation" width="100%">
 </p>
-<p align="center"><em>(b) Recommendation-list-level cognitive-aware evaluation workflow.</em></p>
+<p align="center"><em>(b) Recommendation-list-level content-aware evaluation workflow.</em></p>
 
 A single experiment reports:
 
