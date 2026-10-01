@@ -23,7 +23,7 @@ datasets/
 
 The split is chronological per user (80/10/10) after click-positive filtering and a minimum of four positive interactions. Visual features have 256 dimensions and SentenceTransformer text features have 384 dimensions.
 
-Dataset files are excluded from Git. Google Drive and Hugging Face download links will be added before public release. To rebuild from the raw WWW2025 files, follow [`docs/dataset_repair.md`](../docs/dataset_repair.md).
+Dataset files are excluded from Git. The preprocessed and alignment-corrected item metadata file, `items_final_fixed.json`, is available at [LiweiDeng/SCOPE-Bench on Hugging Face](https://huggingface.co/datasets/LiweiDeng/SCOPE-Bench). This release contains item metadata; the full prepared training bundles and final CDS scoring files will be released upon paper acceptance. To rebuild from the raw WWW2025 files, follow [`docs/dataset_repair.md`](../docs/dataset_repair.md).
 
 Validate one downloaded bundle with `python scripts/validate_short_video_bundle.py --datasets ShortVideoFull`, or omit `--datasets` to validate both.
 
