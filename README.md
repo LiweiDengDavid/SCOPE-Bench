@@ -91,7 +91,6 @@ Download the benchmark artifacts and source dataset from:
 
 - Original WWW2025 ShortVideo dataset: [tsinghua-fib-lab/ShortVideo_dataset](https://github.com/tsinghua-fib-lab/ShortVideo_dataset)
 - Preprocessed and alignment-corrected item metadata (`items_final_fixed.json`): [LiweiDeng/SCOPE-Bench on Hugging Face](https://huggingface.co/datasets/LiweiDeng/SCOPE-Bench)
-- Full prepared training bundles: will be released upon paper acceptance
 - Full Qwen CDS scores: will be released upon paper acceptance
 - CDS annotation and scoring code: will be released upon paper acceptance
 
