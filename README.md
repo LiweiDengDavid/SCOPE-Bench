@@ -7,6 +7,25 @@
 
 Official PyTorch implementation of **Content Depth Matters in Short-Video Recommendation: Rethinking the Attention Economy** (**SCOPE-Bench**).
 
+<p align="center">
+  <a href="https://openreview.net/profile?id=~Liwei_Deng3"><b>Liwei Deng</b></a><sup>1</sup>
+  &nbsp;·&nbsp;
+  <a href="https://openreview.net/profile?id=~Jing_Jiang6"><b>Jing Jiang</b></a><sup>1</sup>
+  &nbsp;·&nbsp;
+  <a href="https://openreview.net/profile?id=~Zhiwei_Li5"><b>Zhiwei Li</b></a><sup>1</sup>
+  &nbsp;·&nbsp;
+  <a href="https://openreview.net/profile?id=~Allison_Clarke2"><b>Allison Clarke</b></a><sup>2</sup>
+  &nbsp;·&nbsp;
+  <a href="https://openreview.net/profile?id=~Yang_Wang134"><b>Yang Wang</b></a><sup>2</sup>
+  &nbsp;·&nbsp;
+  <a href="https://openreview.net/profile?id=~Guodong_Long1"><b>Guodong Long</b></a><sup>1</sup>
+</p>
+
+<p align="center">
+  <sup>1</sup> University of Technology Sydney<br>
+  <sup>2</sup> Department of Health, Disability and Ageing
+</p>
+
 📄 [Paper](https://arxiv.org/pdf/2608.13990) · [arXiv](https://arxiv.org/abs/2608.13990) · [Project page](https://liweidengdavid.github.io/SCOPE-Bench/)
 
 ## 🎯 Overview

@@ -27,7 +27,7 @@ test("exports the SCOPE-Bench project page", async () => {
   assert.match(html, /https:\/\/liweidengdavid\.github\.io\//);
   assert.match(html, /https:\/\/zhw\.li\//);
   assert.match(html, /~Yang_Wang134/);
-  assert.match(html, /Australian Artificial Intelligence Institute/);
+  assert.match(html, /University of Technology Sydney/);
   assert.match(html, /13 representative RSs/);
   assert.match(html, /Cite this work/);
   assert.match(html, /deng2026contentdepthmattersshortvideo/);

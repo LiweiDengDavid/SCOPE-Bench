@@ -33,6 +33,7 @@ export const metadata: Metadata = {
     { name: "Liwei Deng" },
     { name: "Jing Jiang" },
     { name: "Zhiwei Li" },
+    { name: "Allison Clarke" },
     { name: "Yang Wang" },
     { name: "Guodong Long" },
   ],

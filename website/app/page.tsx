@@ -74,13 +74,15 @@ export default function Home() {
             <span>·</span>
             <a href="https://zhw.li/" target="_blank" rel="noreferrer">Zhiwei Li<sup>1</sup></a>
             <span>·</span>
+            <a href="https://openreview.net/profile?id=~Allison_Clarke2" target="_blank" rel="noreferrer">Allison Clarke<sup>2</sup></a>
+            <span>·</span>
             <a href="https://openreview.net/profile?id=~Yang_Wang134" target="_blank" rel="noreferrer">Yang Wang<sup>2</sup></a>
             <span>·</span>
             <a href="https://scholar.google.com.au/citations?user=Pl8m7hMAAAAJ&amp;hl=en" target="_blank" rel="noreferrer">Guodong Long<sup>1</sup></a>
           </p>
           <div className="project-affiliations">
-            <p><sup>1</sup> Australian Artificial Intelligence Institute, University of Technology Sydney</p>
-            <p><sup>2</sup> Evidence and Research, Department of Health, Disability and Ageing</p>
+            <p><sup>1</sup> University of Technology Sydney</p>
+            <p><sup>2</sup> Department of Health, Disability and Ageing</p>
           </div>
           <div className="uts-logo-wrap">
             {/* eslint-disable-next-line @next/next/no-img-element */}
